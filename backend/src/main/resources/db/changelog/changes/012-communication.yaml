@@ -1,0 +1,82 @@
+databaseChangeLog:
+  - changeSet:
+      id: 012-01-calendar_events
+      author: leanquitous
+      changes:
+        - createTable:
+            tableName: calendar_events
+            columns:
+              - column: { name: id, type: BIGINT, autoIncrement: true, constraints: { primaryKey: true, nullable: false } }
+              - column: { name: school_id, type: BIGINT }
+              - column: { name: title, type: VARCHAR(500), constraints: { nullable: false } }
+              - column: { name: description, type: TEXT }
+              - column: { name: event_date, type: DATE, constraints: { nullable: false } }
+              - column: { name: event_type, type: VARCHAR(50), constraints: { nullable: false } }
+              - column: { name: created_at, type: TIMESTAMP }
+              - column: { name: updated_at, type: TIMESTAMP }
+
+  - changeSet:
+      id: 012-02-circulars
+      author: leanquitous
+      changes:
+        - createTable:
+            tableName: circulars
+            columns:
+              - column: { name: id, type: BIGINT, autoIncrement: true, constraints: { primaryKey: true, nullable: false } }
+              - column: { name: school_id, type: BIGINT }
+              - column: { name: title, type: VARCHAR(500), constraints: { nullable: false } }
+              - column: { name: content, type: TEXT, constraints: { nullable: false } }
+              - column: { name: attachment_url, type: VARCHAR(1000) }
+              - column: { name: published_date, type: DATE, constraints: { nullable: false } }
+              - column: { name: target_class_level, type: INT }
+              - column: { name: published_by_user_id, type: BIGINT, constraints: { nullable: false } }
+              - column: { name: created_at, type: TIMESTAMP }
+              - column: { name: updated_at, type: TIMESTAMP }
+
+  - changeSet:
+      id: 012-03-class_announcements
+      author: leanquitous
+      changes:
+        - createTable:
+            tableName: class_announcements
+            columns:
+              - column: { name: id, type: BIGINT, autoIncrement: true, constraints: { primaryKey: true, nullable: false } }
+              - column: { name: school_id, type: BIGINT }
+              - column: { name: division_id, type: BIGINT, constraints: { nullable: false } }
+              - column: { name: content, type: TEXT, constraints: { nullable: false } }
+              - column: { name: published_by_faculty_id, type: BIGINT, constraints: { nullable: false } }
+              - column: { name: created_at, type: TIMESTAMP }
+              - column: { name: updated_at, type: TIMESTAMP }
+
+  - changeSet:
+      id: 012-04-media_galleries
+      author: leanquitous
+      changes:
+        - createTable:
+            tableName: media_galleries
+            columns:
+              - column: { name: id, type: BIGINT, autoIncrement: true, constraints: { primaryKey: true, nullable: false } }
+              - column: { name: school_id, type: BIGINT }
+              - column: { name: title, type: VARCHAR(500), constraints: { nullable: false } }
+              - column: { name: event_date, type: DATE }
+              - column: { name: target_class_level, type: INT }
+              - column: { name: is_approved, type: BOOLEAN, constraints: { nullable: false } }
+              - column: { name: approved_by_user_id, type: BIGINT }
+              - column: { name: created_at, type: TIMESTAMP }
+              - column: { name: updated_at, type: TIMESTAMP }
+
+  - changeSet:
+      id: 012-05-media_assets
+      author: leanquitous
+      changes:
+        - createTable:
+            tableName: media_assets
+            columns:
+              - column: { name: id, type: BIGINT, autoIncrement: true, constraints: { primaryKey: true, nullable: false } }
+              - column: { name: school_id, type: BIGINT }
+              - column: { name: gallery_id, type: BIGINT, constraints: { nullable: false } }
+              - column: { name: file_url, type: VARCHAR(1000), constraints: { nullable: false } }
+              - column: { name: asset_type, type: VARCHAR(50), constraints: { nullable: false } }
+              - column: { name: uploaded_by_faculty_id, type: BIGINT, constraints: { nullable: false } }
+              - column: { name: created_at, type: TIMESTAMP }
+              - column: { name: updated_at, type: TIMESTAMP }

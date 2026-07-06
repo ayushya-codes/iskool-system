@@ -1,0 +1,251 @@
+Module,Endpoint / Feature,HTTP Method,SUPER_ADMIN,SCHOOL_ADMIN,SCHOOL_TRUSTEE,PRINCIPAL,SUPERVISOR,CLERK,HELPDESK,FACULTY,GATE_KEEPER,PARENT,Notes
+# --- FRONTEND PAGES (Web Dashboard) ---,,,,,,,,,,,
+Navigation,Home / Dashboard,PAGE,Y,Y,Y,Y,Y,Y,Y,N,N,FACULTY redirects to /students; PARENT redirects to /my-child; GATE_KEEPER blocked from web
+Navigation,My Child,PAGE,N,N,N,N,N,N,N,N,Y,Parent-only
+Navigation,Students,PAGE,Y,Y,N,Y,Y,Y,N,Y,N,FACULTY = view-only; CLERK = student records access
+Navigation,Faculty,PAGE,Y,Y,N,Y,N,N,N,N,N,
+Navigation,Attendance,PAGE,Y,Y,N,Y,Y,N,N,Y,N,
+Navigation,Coursework,PAGE,Y,Y,N,Y,Y,N,N,Y,N,
+Navigation,Timetable Builder,PAGE,Y,Y,N,Y,Y,N,N,N,N,
+Navigation,Exams,PAGE,Y,Y,N,Y,Y,N,N,Y,N,
+Navigation,Finance,PAGE,Y,N,Y,Y,N,Y,N,N,N,SCHOOL_ADMIN removed; CLERK + SCHOOL_TRUSTEE added
+Navigation,Inventory,PAGE,Y,Y,N,Y,Y,N,N,Y,N,FACULTY = assigned categories only
+Navigation,Safety,PAGE,Y,Y,N,Y,N,N,N,N,Y,
+Navigation,Helpdesk,PAGE,Y,Y,N,Y,N,N,Y,N,Y,HELPDESK role can manage tickets
+Navigation,Almanac,PAGE,Y,Y,N,Y,Y,N,N,Y,N,
+Navigation,Communication,PAGE,Y,Y,N,Y,Y,N,N,Y,N,Create/update: PRINCIPAL + SUPERVISOR only
+Navigation,Notifications,PAGE,Y,Y,N,Y,Y,N,N,Y,N,All authenticated users
+Navigation,School Settings,PAGE,Y,N,N,N,N,N,N,N,N,SUPER_ADMIN only
+# --- MOBILE APP ---,,,,,,,,,,,
+Mobile,Gate Keeper Screen,APP,N,N,N,N,N,N,N,N,Y,GATE_KEEPER only - QR scan + pass code verify
+Mobile,Helpdesk Screen,APP,N,N,N,N,N,N,Y,N,N,HELPDESK only - ticket list + resolve + reply
+Mobile,Login,APP,Y,Y,Y,Y,Y,Y,Y,Y,Y,All roles can attempt login; only GATE_KEEPER + HELPDESK proceed
+# --- AUTH & USERS ---,,,,,,,,,,,
+Auth,Login,POST,Y,Y,Y,Y,Y,Y,Y,Y,Y,All roles
+Auth,Register,POST,Y,Y,Y,Y,Y,Y,Y,Y,Y,Public endpoint
+Auth,Get current user,GET,Y,Y,Y,Y,Y,Y,Y,Y,Y,Authenticated
+Users,List all users,GET,Y,Y,N,Y,N,N,N,N,N,Class-level: SUPER_ADMIN + PRINCIPAL
+Users,Create user,POST,Y,Y,N,Y,N,N,N,N,N,Class-level: SUPER_ADMIN + PRINCIPAL
+# --- SCHOOL / TENANT ---,,,,,,,,,,,
+School,Create school,POST,Y,N,N,N,N,N,N,N,N,SUPER_ADMIN only
+School,List schools,GET,Y,N,N,N,N,N,N,N,N,SUPER_ADMIN only
+School,Get school by ID,GET,Y,N,N,Y,N,N,N,N,N,SUPER_ADMIN + PRINCIPAL
+School,Get school by subdomain,GET,Y,Y,Y,Y,Y,Y,Y,Y,Y,Public (no auth)
+School,Update school,PUT,Y,N,N,N,N,N,N,N,N,SUPER_ADMIN only
+School,Delete school,DELETE,Y,N,N,N,N,N,N,N,N,SUPER_ADMIN only
+# --- STUDENTS API ---,,,,,,,,,,,
+Students,List / filter students,GET,Y,Y,N,Y,Y,Y,N,Y,N,Class-level: SA+PRIN+FAC+CLERK; no explicit guard = class-level applies
+Students,Get student by ID,GET,Y,Y,N,Y,Y,Y,N,Y,N,Class-level applies
+Students,Get student detail,GET,Y,Y,N,Y,Y,Y,N,Y,N,Class-level applies
+Students,Get my child,GET,N,N,N,N,N,N,N,N,Y,PARENT only
+Students,Create student,POST,Y,Y,N,Y,N,Y,N,N,N,SA+PRIN+CLERK
+Students,Update student,PUT,Y,Y,N,Y,N,Y,N,N,N,SA+PRIN+CLERK
+Students,Delete student,DELETE,Y,Y,N,Y,N,N,N,N,N,SA+PRIN (soft delete)
+Students,Get enrollments,GET,Y,Y,N,Y,Y,N,N,Y,Y,SA+PRIN+FAC+PARENT
+Students,Create enrollment,POST,Y,Y,N,Y,N,Y,N,N,N,SA+PRIN+CLERK
+Students,Upsert medical profile,PUT,Y,Y,N,Y,N,N,N,N,N,SA+PRIN
+Students,Get emergency contacts,GET,Y,Y,N,Y,Y,N,N,Y,Y,SA+PRIN+FAC+PARENT
+Students,Add emergency contact,POST,Y,Y,N,Y,N,N,N,N,N,SA+PRIN
+Students,Delete emergency contact,DELETE,Y,Y,N,Y,N,N,N,N,N,SA+PRIN
+Students,Get siblings,GET,Y,Y,N,Y,Y,N,N,Y,Y,SA+PRIN+FAC+PARENT
+Students,Add sibling,POST,Y,Y,N,Y,N,N,N,N,N,SA+PRIN
+Students,Remove sibling,DELETE,Y,Y,N,Y,N,N,N,N,N,SA+PRIN
+Students,Get timeline,GET,Y,Y,N,Y,Y,N,N,Y,Y,SA+SCH_ADMIN+PRIN+SUPERVISOR+FAC+PARENT
+Students,Add timeline event,POST,Y,Y,N,Y,Y,N,N,N,N,SA+SCH_ADMIN+PRIN+SUPERVISOR
+# --- ATTENDANCE API ---,,,,,,,,,,,
+Attendance,Mark single attendance,POST,Y,Y,N,Y,Y,N,N,Y,N,SA+PRIN+FAC
+Attendance,Mark bulk attendance,POST,Y,Y,N,Y,Y,N,N,Y,N,SA+PRIN+FAC
+Attendance,Get by division & date,GET,Y,Y,N,Y,Y,N,N,Y,N,SA+PRIN+FAC
+Attendance,Get by student & range,GET,Y,Y,N,Y,Y,N,N,Y,Y,SA+PRIN+FAC+PARENT
+Attendance,Get by division & range,GET,Y,Y,N,Y,Y,N,N,Y,N,SA+PRIN+FAC
+Attendance,Apply student leave,POST,Y,N,N,N,N,N,N,N,Y,SA+PARENT
+Attendance,Get student leaves,GET,Y,Y,N,Y,Y,N,N,Y,Y,SA+PRIN+FAC+PARENT
+Attendance,Get pending student leaves,GET,Y,Y,N,Y,N,N,N,N,N,SA+PRIN
+Attendance,Approve student leave,PUT,Y,Y,N,Y,N,N,N,N,N,SA+PRIN
+Attendance,Apply faculty leave,POST,Y,Y,N,Y,Y,N,N,Y,N,SA+PRIN+FAC
+Attendance,Get faculty leaves,GET,Y,Y,N,Y,Y,N,N,Y,N,SA+PRIN+FAC
+Attendance,Get pending faculty leaves,GET,Y,Y,N,Y,N,N,N,N,N,SA+PRIN
+Attendance,Approve faculty leave,PUT,Y,Y,N,Y,N,N,N,N,N,SA+PRIN
+# --- EXAMS API ---,,,,,,,,,,,
+Exams,Create exam,POST,Y,Y,N,Y,N,N,N,N,N,SA+PRIN
+Exams,List exams by batch,GET,Y,Y,Y,Y,Y,Y,Y,Y,Y,No auth guard (class-level: isAuthenticated)
+Exams,List exams by division,GET,Y,Y,N,Y,Y,N,N,Y,N,SA+PRIN+FAC+PARENT
+Exams,Delete exam,DELETE,Y,N,N,N,N,N,N,N,N,SA only (soft delete)
+Exams,Set exam portion,POST,Y,Y,N,Y,Y,N,N,Y,N,SA+PRIN+FAC
+Exams,Get exam portions,GET,Y,Y,Y,Y,Y,Y,Y,Y,Y,No auth guard
+Exams,Enter result,POST,Y,Y,N,Y,Y,N,N,Y,N,SA+PRIN+FAC
+Exams,Get results by exam,GET,Y,Y,N,Y,Y,N,N,Y,N,SA+PRIN+FAC
+Exams,Get results by student,GET,Y,Y,N,Y,Y,N,N,Y,Y,SA+PRIN+FAC+PARENT
+Exams,Create grading scheme,POST,Y,Y,N,Y,N,N,N,N,N,SA+PRIN
+Exams,List grading schemes,GET,Y,Y,Y,Y,Y,Y,Y,Y,Y,No auth guard
+Exams,Delete grading scheme,DELETE,Y,N,N,N,N,N,N,N,N,SA only
+Exams,Set rank,POST,Y,Y,N,Y,N,N,N,N,N,SA+PRIN
+Exams,Get rank list,GET,Y,Y,Y,Y,Y,Y,Y,Y,Y,No auth guard
+Exams,Generate report card,POST,Y,Y,N,Y,N,N,N,N,N,SA+PRIN
+Exams,Approve report card,PUT,Y,Y,N,Y,N,N,N,N,N,SA+PRIN
+Exams,Get report cards by batch,GET,Y,Y,N,Y,N,N,N,N,N,SA+PRIN
+# --- FINANCE API ---,,,,,,,,,,,
+Finance,Create fee structure,POST,Y,N,Y,Y,N,Y,N,N,N,SA+PRIN+CLERK+TRUSTEE (SCHOOL_ADMIN removed)
+Finance,Get fee structures by batch,GET,Y,N,Y,Y,N,Y,N,N,N,SA+PRIN+CLERK+TRUSTEE
+Finance,Get fee structures by class,GET,Y,N,Y,Y,N,Y,N,N,N,SA+PRIN+CLERK+TRUSTEE
+Finance,Delete fee structure,DELETE,Y,N,N,N,N,N,N,N,N,SA only
+Finance,Create invoice,POST,Y,N,Y,Y,N,Y,N,N,N,SA+PRIN+CLERK+TRUSTEE
+Finance,Get invoices by student,GET,Y,N,Y,Y,N,Y,N,N,Y,SA+PRIN+CLERK+TRUSTEE+PARENT
+Finance,Get invoices by batch,GET,Y,N,Y,Y,N,Y,N,N,N,SA+PRIN+CLERK+TRUSTEE
+Finance,Get invoices by status,GET,Y,N,Y,Y,N,Y,N,N,N,SA+PRIN+CLERK+TRUSTEE
+Finance,Record payment,POST,Y,N,Y,Y,N,Y,N,N,N,SA+PRIN+CLERK+TRUSTEE (PARENT removed)
+Finance,Get payments by invoice,GET,Y,N,Y,Y,N,Y,N,N,Y,SA+PRIN+CLERK+TRUSTEE+PARENT
+Finance,Generate receipt,POST,Y,N,Y,Y,N,Y,N,N,N,SA+PRIN+CLERK+TRUSTEE
+Finance,Get receipt by payment,GET,Y,N,Y,Y,N,Y,N,N,Y,SA+PRIN+CLERK+TRUSTEE+PARENT
+# --- COURSEWORK API ---,,,,,,,,,,,
+Coursework,Create timetable,POST,Y,Y,N,Y,Y,N,N,N,N,SA+PRIN+SUPERVISOR
+Coursework,Get timetables by batch,GET,Y,Y,Y,Y,Y,Y,Y,Y,Y,No auth guard
+Coursework,Publish timetable,PUT,Y,Y,N,Y,Y,N,N,N,N,SA+PRIN+SUPERVISOR
+Coursework,Create slot,POST,Y,Y,N,Y,Y,N,N,N,N,SA+PRIN+SUPERVISOR
+Coursework,Get slots by division,GET,Y,Y,Y,Y,Y,Y,Y,Y,Y,No auth guard
+Coursework,Get slots by timetable,GET,Y,Y,Y,Y,Y,Y,Y,Y,Y,No auth guard
+Coursework,Get faculty slots by day,GET,Y,Y,Y,Y,Y,Y,Y,Y,Y,No auth guard
+Coursework,Delete slot,DELETE,Y,Y,N,Y,Y,N,N,N,N,SA+PRIN+SUPERVISOR
+Coursework,Create room,POST,Y,Y,N,Y,Y,N,N,N,N,SA+PRIN+SUPERVISOR
+Coursework,List rooms,GET,Y,Y,Y,Y,Y,Y,Y,Y,Y,No auth guard
+Coursework,Delete room,DELETE,Y,Y,N,Y,Y,N,N,N,N,SA+PRIN+SUPERVISOR
+Coursework,Create period requirement,POST,Y,Y,N,Y,N,N,N,N,N,SA+PRIN
+Coursework,Get period requirements,GET,Y,Y,N,Y,N,N,N,N,N,SA+PRIN
+Coursework,Delete period requirement,DELETE,Y,N,N,N,N,N,N,N,N,SA only
+Coursework,Create generation request,POST,Y,Y,N,Y,N,N,N,N,N,SA+PRIN
+Coursework,Get generation requests,GET,Y,Y,N,Y,N,N,N,N,N,SA+PRIN
+Coursework,Update generation status,PUT,Y,Y,N,Y,N,N,N,N,N,SA+PRIN
+Coursework,Log syllabus,POST,Y,Y,N,Y,Y,N,N,Y,N,SA+PRIN+FAC
+Coursework,Get syllabus logs,GET,Y,Y,Y,Y,Y,Y,Y,Y,Y,No auth guard
+Coursework,Get syllabus for parent,GET,N,N,N,N,N,N,N,N,Y,PARENT only
+Coursework,Create assignment,POST,Y,Y,N,Y,Y,N,N,Y,N,SA+PRIN+FAC
+Coursework,Get assignments by division,GET,Y,Y,Y,Y,Y,Y,Y,Y,Y,No auth guard
+Coursework,Get assignments for parent,GET,N,N,N,N,N,N,N,N,Y,PARENT only
+Coursework,Get assignments by faculty,GET,Y,Y,Y,Y,Y,Y,Y,Y,Y,No auth guard
+Coursework,Delete assignment,DELETE,Y,Y,N,Y,Y,N,N,Y,N,SA+PRIN+FAC
+Coursework,Submit assignment,POST,Y,Y,N,Y,Y,N,N,Y,Y,SA+PRIN+FAC+PARENT
+Coursework,Get submissions by assignment,GET,Y,Y,N,Y,Y,N,N,Y,N,SA+PRIN+FAC
+Coursework,Get submissions by student,GET,Y,Y,N,Y,Y,N,N,Y,Y,SA+PRIN+FAC+PARENT
+Coursework,Grade submission,PUT,Y,Y,N,Y,Y,N,N,Y,N,SA+PRIN+FAC
+# --- COMMUNICATION API ---,,,,,,,,,,,
+Communication,Create calendar event,POST,Y,Y,N,Y,Y,N,N,N,N,SA+PRIN+SUPERVISOR
+Communication,List calendar events,GET,Y,Y,Y,Y,Y,Y,Y,Y,Y,All authenticated
+Communication,Delete calendar event,DELETE,Y,N,N,N,N,N,N,N,N,SA only
+Communication,Create circular,POST,Y,Y,N,Y,Y,N,N,N,N,SA+PRIN+SUPERVISOR
+Communication,List circulars,GET,Y,Y,Y,Y,Y,Y,Y,Y,Y,All authenticated
+Communication,Delete circular,DELETE,Y,N,N,N,N,N,N,N,N,SA only
+Communication,Create announcement,POST,Y,Y,N,Y,Y,N,N,N,N,SA+PRIN+SUPERVISOR
+Communication,Get announcements by division,GET,Y,Y,N,Y,Y,N,N,Y,Y,SA+PRIN+FAC+PARENT
+Communication,Delete announcement,DELETE,Y,Y,N,Y,Y,N,N,N,N,SA+PRIN+SUPERVISOR
+Communication,Create gallery,POST,Y,Y,N,Y,Y,N,N,N,N,SA+PRIN+SUPERVISOR
+Communication,List galleries,GET,Y,Y,Y,Y,Y,Y,Y,Y,Y,All authenticated
+Communication,Get pending galleries,GET,Y,Y,N,Y,N,N,N,N,N,SA+PRIN
+Communication,Approve gallery,PUT,Y,Y,N,Y,N,N,N,N,N,SA+PRIN
+Communication,Delete gallery,DELETE,Y,N,N,N,N,N,N,N,N,SA only
+Communication,Upload asset,POST,Y,Y,N,Y,Y,N,N,N,N,SA+PRIN+SUPERVISOR
+Communication,Get assets by gallery,GET,Y,Y,Y,Y,Y,Y,Y,Y,Y,All authenticated
+Communication,Delete asset,DELETE,Y,Y,N,Y,Y,N,N,N,N,SA+PRIN+SUPERVISOR (soft delete)
+# --- SAFETY API ---,,,,,,,,,,,
+Safety,Create gate pass,POST,Y,Y,N,Y,N,N,N,Y,N,SA+PRIN+FAC
+Safety,Verify gate pass,POST,Y,N,N,Y,N,N,N,N,Y,SA+PRIN+GATE_KEEPER
+Safety,Get gate passes by student,GET,Y,Y,N,Y,N,N,N,N,Y,SA+PRIN+PARENT
+Safety,Create proxy pickup,POST,Y,Y,N,Y,N,N,N,N,Y,SA+PRIN+PARENT
+Safety,Get proxy pickups by date,GET,Y,Y,N,Y,N,N,N,N,N,SA+PRIN
+Safety,Get proxy pickups by student,GET,Y,Y,N,Y,N,N,N,N,Y,SA+PRIN+PARENT
+# --- FACULTY API ---,,,,,,,,,,,
+Faculty,Create faculty,POST,Y,Y,N,Y,N,N,N,N,N,SA+PRIN
+Faculty,List faculty,GET,Y,Y,N,Y,N,N,N,N,N,SA+PRIN
+Faculty,Get faculty by ID,GET,Y,Y,Y,Y,Y,Y,Y,Y,Y,No auth guard
+Faculty,Update faculty,PUT,Y,Y,N,Y,N,N,N,N,N,SA+PRIN
+Faculty,Delete faculty,DELETE,Y,N,N,N,N,N,N,N,N,SA only
+Faculty,Assign class to faculty,POST,Y,Y,N,Y,N,N,N,N,N,SA+PRIN
+Faculty,Get faculty assignments,GET,Y,Y,Y,Y,Y,Y,Y,Y,Y,No auth guard
+Faculty,Remove assignment,DELETE,Y,Y,N,Y,N,N,N,N,N,SA+PRIN
+Faculty,Clock in,POST,Y,Y,Y,Y,Y,Y,Y,Y,Y,No auth guard
+Faculty,Clock out,POST,Y,Y,Y,Y,Y,Y,Y,Y,Y,No auth guard
+Faculty,Get faculty attendance,GET,Y,Y,Y,Y,Y,Y,Y,Y,Y,No auth guard
+Faculty,Set availability,POST,Y,Y,N,Y,Y,N,N,Y,N,SA+PRIN+FAC
+Faculty,Get availability,GET,Y,Y,Y,Y,Y,Y,Y,Y,Y,No auth guard
+Faculty,Remove availability,DELETE,Y,Y,N,Y,Y,N,N,Y,N,SA+PRIN+FAC
+# --- INVENTORY API ---,,,,,,,,,,,
+Inventory,Create item,POST,Y,Y,N,Y,N,N,N,N,N,SA+PRIN
+Inventory,List items,GET,Y,Y,N,Y,Y,N,N,Y,N,SA+PRIN+FAC (FAC = assigned categories only)
+Inventory,Get my assigned items,GET,N,N,N,N,N,N,N,Y,N,FACULTY only
+Inventory,Update item,PUT,Y,Y,N,Y,N,N,N,N,N,SA+PRIN
+Inventory,Delete item (soft delete),DELETE,Y,N,N,N,N,N,N,N,N,SA only - marks isActive=false
+Inventory,Create indent request,POST,Y,Y,N,Y,Y,N,N,Y,N,SA+PRIN+FAC
+Inventory,List indents by faculty,GET,Y,Y,N,Y,N,N,N,N,N,SA+PRIN
+Inventory,List indents by status,GET,Y,Y,N,Y,N,N,N,N,N,SA+PRIN
+Inventory,Update indent status,PUT,Y,Y,N,Y,N,N,N,N,N,SA+PRIN
+Inventory,Create faculty assignment,POST,Y,Y,N,Y,N,N,N,N,N,SA+PRIN
+Inventory,List faculty assignments,GET,Y,Y,N,Y,N,N,N,N,N,SA+PRIN
+Inventory,Remove faculty assignment,DELETE,Y,Y,N,Y,N,N,N,N,N,SA+PRIN
+Inventory,Get my assigned categories,GET,N,N,N,N,N,N,N,Y,N,FACULTY only
+# --- HELPDESK API ---,,,,,,,,,,,
+Helpdesk,Create ticket,POST,Y,Y,Y,Y,Y,Y,Y,Y,Y,All authenticated
+Helpdesk,Get tickets by student,GET,Y,Y,N,Y,N,N,N,N,Y,SA+PRIN+PARENT
+Helpdesk,Get tickets by status,GET,Y,Y,N,Y,N,N,Y,N,N,SA+PRIN+HELPDESK
+Helpdesk,Assign ticket,PUT,Y,Y,N,Y,N,N,Y,N,N,SA+PRIN+HELPDESK
+Helpdesk,Resolve ticket,PUT,Y,Y,N,Y,N,N,Y,N,N,SA+PRIN+HELPDESK
+Helpdesk,Add reply,POST,Y,Y,Y,Y,Y,Y,Y,Y,Y,All authenticated
+Helpdesk,Get replies by ticket,GET,Y,Y,N,Y,N,N,Y,N,Y,SA+PRIN+HELPDESK+PARENT
+# --- ALMANAC API ---,,,,,,,,,,,
+Almanac,Add remark,POST,Y,Y,N,Y,Y,N,N,Y,N,SA+PRIN+FAC
+Almanac,Get remarks by student,GET,Y,Y,N,Y,Y,N,N,Y,Y,SA+PRIN+FAC+PARENT
+Almanac,Create prayer,POST,Y,Y,N,Y,N,N,N,N,N,SA+PRIN
+Almanac,List prayers,GET,Y,Y,Y,Y,Y,Y,Y,Y,Y,No auth guard
+Almanac,Delete prayer,DELETE,Y,N,N,N,N,N,N,N,N,SA only
+# --- ACADEMIC STRUCTURE API ---,,,,,,,,,,,
+Academic,Create batch,POST,Y,Y,N,Y,N,N,N,N,N,SA+PRIN
+Academic,List batches,GET,Y,Y,N,Y,Y,N,N,Y,N,SA+PRIN+FAC
+Academic,Get active batch,GET,Y,Y,N,Y,Y,N,N,Y,N,SA+PRIN+FAC
+Academic,Update batch,PUT,Y,Y,N,Y,N,N,N,N,N,SA+PRIN
+Academic,Delete batch,DELETE,Y,N,N,N,N,N,N,N,N,SA only
+Academic,Create term,POST,Y,Y,N,Y,N,N,N,N,N,SA+PRIN
+Academic,Get terms by batch,GET,Y,Y,N,Y,Y,N,N,Y,N,SA+PRIN+FAC
+Academic,Delete term,DELETE,Y,N,N,N,N,N,N,N,N,SA only
+Academic,Create class,POST,Y,Y,N,Y,N,N,N,N,N,SA+PRIN
+Academic,List classes,GET,Y,Y,N,Y,Y,N,N,Y,N,SA+PRIN+FAC
+Academic,Update class,PUT,Y,Y,N,Y,N,N,N,N,N,SA+PRIN
+Academic,Delete class,DELETE,Y,N,N,N,N,N,N,N,N,SA only
+Academic,Create division,POST,Y,Y,N,Y,N,N,N,N,N,SA+PRIN
+Academic,Get divisions by class,GET,Y,Y,N,Y,Y,N,N,Y,N,SA+PRIN+FAC
+Academic,Delete division,DELETE,Y,N,N,N,N,N,N,N,N,SA only
+Academic,Create subject,POST,Y,Y,N,Y,N,N,N,N,N,SA+PRIN
+Academic,List subjects,GET,Y,Y,N,Y,Y,N,N,Y,Y,SA+PRIN+FAC+PARENT
+Academic,Update subject,PUT,Y,Y,N,Y,N,N,N,N,N,SA+PRIN
+Academic,Delete subject,DELETE,Y,N,N,N,N,N,N,N,N,SA only
+# --- HOLIDAY API ---,,,,,,,,,,,
+Holiday,Create holiday,POST,Y,Y,N,Y,Y,N,N,N,N,SA+SCH_ADMIN+PRIN+SUPERVISOR
+Holiday,Bulk create holidays,POST,Y,Y,N,Y,Y,N,N,N,N,SA+SCH_ADMIN+PRIN+SUPERVISOR
+Holiday,List holidays,GET,Y,Y,Y,Y,Y,Y,Y,Y,Y,All authenticated
+Holiday,Delete holiday,DELETE,Y,Y,N,Y,N,N,N,N,N,SA+SCH_ADMIN+PRIN
+# --- NOTIFICATION API ---,,,,,,,,,,,
+Notification,Send notification,POST,Y,Y,N,Y,N,N,N,N,N,SA+PRIN
+Notification,Get by user,GET,Y,Y,Y,Y,Y,Y,Y,Y,Y,All authenticated
+Notification,Get unread by user,GET,Y,Y,Y,Y,Y,Y,Y,Y,Y,All authenticated
+Notification,Mark as read,PUT,Y,Y,Y,Y,Y,Y,Y,Y,Y,All authenticated
+Notification,Mark all as read,PUT,Y,Y,Y,Y,Y,Y,Y,Y,Y,All authenticated
+# --- SCHOOL CUSTOMIZATION API ---,,,,,,,,,,,
+Customization,Get public theme,GET,Y,Y,Y,Y,Y,Y,Y,Y,Y,Public (no auth)
+Customization,Get customization,GET,Y,Y,N,Y,Y,N,N,Y,N,SA+PRIN+FAC
+Customization,Update customization,PUT,Y,Y,N,Y,N,N,N,N,N,SA+PRIN
+Customization,Upsert label,POST,Y,Y,N,Y,N,N,N,N,N,SA+PRIN
+Customization,Get all labels,GET,Y,Y,N,Y,N,N,N,N,N,SA+PRIN
+Customization,Get labels by language,GET,Y,Y,N,Y,N,N,N,N,N,SA+PRIN
+Customization,Delete label,DELETE,Y,N,N,N,N,N,N,N,N,SA only
+Customization,Upload asset,POST,Y,Y,N,Y,N,N,N,N,N,SA+PRIN
+Customization,Get all assets,GET,Y,Y,N,Y,Y,N,N,Y,Y,SA+PRIN+FAC+PARENT
+Customization,Get assets by type,GET,Y,Y,N,Y,Y,N,N,Y,Y,SA+PRIN+FAC+PARENT
+Customization,Delete asset,DELETE,Y,N,N,N,N,N,N,N,N,SA only
+,,,,,,,,,,,
+,,,,,,,,,,,
+General Guidelines,"1. A principal can update anything for his/her school/tenant only. Same applies to all roles except Super-Admin.",,,,,,,,,,
+,2. Super Admin must have a tenantId for all operations except School/Tenant creation,,,,,,,,,,
+,3. GATE_KEEPER role has NO web dashboard access — mobile app only (gate pass scanning),,,,,,,,,,
+,4. HELPDESK role has both web + mobile access — can manage tickets on both platforms,,,,,,,,,,
+,5. CLERK role has web access — student records + finance (invoices/payments/receipts),,,,,,,,,,
+,6. SCHOOL_TRUSTEE role has web access — finance oversight only,,,,,,,,,,
+,7. SCHOOL_ADMIN role removed from Finance — replaced by CLERK + SCHOOL_TRUSTEE,,,,,,,,,,
+,8. All deletions are soft deletes (mark as inactive) — no hard deletes anywhere,,,,,,,,,,
+,9. Password for all seed users: abc@123,,,,,,,,,,

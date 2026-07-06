@@ -1,0 +1,20 @@
+databaseChangeLog:
+  - changeSet:
+      id: 017-01-faculty_inventory_assignments
+      author: leanquitous
+      changes:
+        - createTable:
+            tableName: faculty_inventory_assignments
+            columns:
+              - column: { name: id, type: BIGINT, autoIncrement: true, constraints: { primaryKey: true, nullable: false } }
+              - column: { name: school_id, type: BIGINT }
+              - column: { name: faculty_user_id, type: BIGINT, constraints: { nullable: false } }
+              - column: { name: category, type: VARCHAR(50), constraints: { nullable: false } }
+              - column: { name: created_at, type: TIMESTAMP }
+              - column: { name: updated_at, type: TIMESTAMP }
+        - createIndex:
+            tableName: faculty_inventory_assignments
+            indexName: idx_fia_faculty_school
+            columns:
+              - column: { name: faculty_user_id }
+              - column: { name: school_id }

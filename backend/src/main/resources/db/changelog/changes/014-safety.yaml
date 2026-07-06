@@ -1,0 +1,32 @@
+databaseChangeLog:
+  - changeSet:
+      id: 014-01-gate_passes
+      author: leanquitous
+      changes:
+        - createTable:
+            tableName: gate_passes
+            columns:
+              - column: { name: id, type: BIGINT, autoIncrement: true, constraints: { primaryKey: true, nullable: false } }
+              - column: { name: school_id, type: BIGINT }
+              - column: { name: student_id, type: BIGINT, constraints: { nullable: false } }
+              - column: { name: pass_code, type: VARCHAR(255), constraints: { nullable: false, unique: true } }
+              - column: { name: valid_date, type: DATE, constraints: { nullable: false } }
+              - column: { name: is_used, type: BOOLEAN, constraints: { nullable: false } }
+              - column: { name: created_at, type: TIMESTAMP }
+              - column: { name: updated_at, type: TIMESTAMP }
+
+  - changeSet:
+      id: 014-02-proxy_pickups
+      author: leanquitous
+      changes:
+        - createTable:
+            tableName: proxy_pickups
+            columns:
+              - column: { name: id, type: BIGINT, autoIncrement: true, constraints: { primaryKey: true, nullable: false } }
+              - column: { name: school_id, type: BIGINT }
+              - column: { name: student_id, type: BIGINT, constraints: { nullable: false } }
+              - column: { name: pickup_person_name, type: VARCHAR(255), constraints: { nullable: false } }
+              - column: { name: pickup_person_photo_url, type: VARCHAR(1000) }
+              - column: { name: valid_date, type: DATE, constraints: { nullable: false } }
+              - column: { name: created_at, type: TIMESTAMP }
+              - column: { name: updated_at, type: TIMESTAMP }

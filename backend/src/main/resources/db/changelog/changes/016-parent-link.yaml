@@ -1,0 +1,19 @@
+databaseChangeLog:
+  - changeSet:
+      id: 016-01-students-add-parent-user-id
+      author: leanquitous
+      changes:
+        - addColumn:
+            tableName: students
+            columns:
+              - column:
+                  name: parent_user_id
+                  type: BIGINT
+                  constraints:
+                    nullable: true
+        - createIndex:
+            tableName: students
+            indexName: idx_students_parent_user_id
+            columns:
+              - column:
+                  name: parent_user_id

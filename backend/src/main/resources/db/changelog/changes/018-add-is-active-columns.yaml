@@ -1,0 +1,26 @@
+databaseChangeLog:
+  - changeSet:
+      id: 018-01-students-is-active
+      author: leanquitous
+      changes:
+        - addColumn:
+            tableName: students
+            columns:
+              - column: { name: is_active, type: BOOLEAN, constraints: { nullable: false, defaultValue: true } }
+      rollback:
+        - dropColumn:
+            tableName: students
+            columnName: is_active
+
+  - changeSet:
+      id: 018-02-inventory-items-is-active
+      author: leanquitous
+      changes:
+        - addColumn:
+            tableName: inventory_items
+            columns:
+              - column: { name: is_active, type: BOOLEAN, constraints: { nullable: false, defaultValue: true } }
+      rollback:
+        - dropColumn:
+            tableName: inventory_items
+            columnName: is_active

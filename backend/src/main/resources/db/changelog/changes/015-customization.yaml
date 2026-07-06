@@ -1,0 +1,68 @@
+databaseChangeLog:
+  - changeSet:
+      id: 015-01-school_customizations
+      author: leanquitous
+      changes:
+        - createTable:
+            tableName: school_customizations
+            columns:
+              - column: { name: id, type: BIGINT, autoIncrement: true, constraints: { primaryKey: true, nullable: false } }
+              - column: { name: school_id, type: BIGINT, constraints: { nullable: false, unique: true } }
+              - column: { name: favicon_url, type: VARCHAR(1000) }
+              - column: { name: banner_url, type: VARCHAR(1000) }
+              - column: { name: report_card_logo_url, type: VARCHAR(1000) }
+              - column: { name: font_family, type: VARCHAR(255) }
+              - column: { name: heading_font_family, type: VARCHAR(255) }
+              - column: { name: accent_color, type: VARCHAR(50) }
+              - column: { name: background_color, type: VARCHAR(50) }
+              - column: { name: sidebar_color, type: VARCHAR(50) }
+              - column: { name: css_overrides, type: TEXT }
+              - column: { name: date_format, type: VARCHAR(50) }
+              - column: { name: time_format, type: VARCHAR(50) }
+              - column: { name: locale, type: VARCHAR(50) }
+              - column: { name: enable_finance, type: BOOLEAN, constraints: { nullable: false } }
+              - column: { name: enable_helpdesk, type: BOOLEAN, constraints: { nullable: false } }
+              - column: { name: enable_inventory, type: BOOLEAN, constraints: { nullable: false } }
+              - column: { name: enable_almanac, type: BOOLEAN, constraints: { nullable: false } }
+              - column: { name: enable_communication, type: BOOLEAN, constraints: { nullable: false } }
+              - column: { name: enable_safety, type: BOOLEAN, constraints: { nullable: false } }
+              - column: { name: created_at, type: TIMESTAMP }
+              - column: { name: updated_at, type: TIMESTAMP }
+
+  - changeSet:
+      id: 015-02-custom_labels
+      author: leanquitous
+      changes:
+        - createTable:
+            tableName: custom_labels
+            columns:
+              - column: { name: id, type: BIGINT, autoIncrement: true, constraints: { primaryKey: true, nullable: false } }
+              - column: { name: school_id, type: BIGINT, constraints: { nullable: false } }
+              - column: { name: label_key, type: VARCHAR(255), constraints: { nullable: false } }
+              - column: { name: label_value, type: VARCHAR(255), constraints: { nullable: false } }
+              - column: { name: language, type: VARCHAR(10), constraints: { nullable: false } }
+              - column: { name: created_at, type: TIMESTAMP }
+              - column: { name: updated_at, type: TIMESTAMP }
+        - addUniqueConstraint:
+            tableName: custom_labels
+            columnNames: school_id, label_key, language
+            constraintName: uk_custom_labels
+
+  - changeSet:
+      id: 015-03-school_assets
+      author: leanquitous
+      changes:
+        - createTable:
+            tableName: school_assets
+            columns:
+              - column: { name: id, type: BIGINT, autoIncrement: true, constraints: { primaryKey: true, nullable: false } }
+              - column: { name: school_id, type: BIGINT, constraints: { nullable: false } }
+              - column: { name: asset_type, type: VARCHAR(50), constraints: { nullable: false } }
+              - column: { name: file_url, type: VARCHAR(1000), constraints: { nullable: false } }
+              - column: { name: s3_key, type: VARCHAR(1000), constraints: { nullable: false } }
+              - column: { name: original_filename, type: VARCHAR(500) }
+              - column: { name: content_type, type: VARCHAR(255) }
+              - column: { name: file_size_bytes, type: BIGINT }
+              - column: { name: uploaded_by_user_id, type: BIGINT }
+              - column: { name: created_at, type: TIMESTAMP }
+              - column: { name: updated_at, type: TIMESTAMP }

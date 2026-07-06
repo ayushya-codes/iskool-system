@@ -1,0 +1,17 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: iskool-postgres
+    environment:
+      POSTGRES_DB: iskool
+      POSTGRES_USER: iskool
+      POSTGRES_PASSWORD: iskool123
+    ports:
+      - "5432:5432"
+    volumes:
+      - iskool_pg_data:/var/lib/postgresql/data
+
+volumes:
+  iskool_pg_data:

@@ -1,0 +1,106 @@
+databaseChangeLog:
+  - changeSet:
+      id: 008-01-fee_structures
+      author: leanquitous
+      changes:
+        - createTable:
+            tableName: fee_structures
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column: { name: school_id, type: BIGINT }
+              - column: { name: class_id, type: BIGINT, constraints: { nullable: false } }
+              - column: { name: batch_id, type: BIGINT, constraints: { nullable: false } }
+              - column: { name: fee_type, type: VARCHAR(50), constraints: { nullable: false } }
+              - column:
+                  name: amount
+                  type: DECIMAL(12,2)
+                  constraints:
+                    nullable: false
+              - column: { name: created_at, type: TIMESTAMP }
+              - column: { name: updated_at, type: TIMESTAMP }
+        - addUniqueConstraint:
+            tableName: fee_structures
+            columnNames: school_id, class_id, fee_type, batch_id
+            constraintName: uk_fee_structures
+
+  - changeSet:
+      id: 008-02-invoices
+      author: leanquitous
+      changes:
+        - createTable:
+            tableName: invoices
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column: { name: school_id, type: BIGINT }
+              - column: { name: student_id, type: BIGINT, constraints: { nullable: false } }
+              - column: { name: batch_id, type: BIGINT, constraints: { nullable: false } }
+              - column: { name: invoice_number, type: VARCHAR(255), constraints: { nullable: false, unique: true } }
+              - column:
+                  name: total_amount
+                  type: DECIMAL(12,2)
+                  constraints:
+                    nullable: false
+              - column: { name: due_date, type: DATE, constraints: { nullable: false } }
+              - column: { name: status, type: VARCHAR(50), constraints: { nullable: false } }
+              - column: { name: created_at, type: TIMESTAMP }
+              - column: { name: updated_at, type: TIMESTAMP }
+
+  - changeSet:
+      id: 008-03-payments
+      author: leanquitous
+      changes:
+        - createTable:
+            tableName: payments
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column: { name: school_id, type: BIGINT }
+              - column: { name: invoice_id, type: BIGINT, constraints: { nullable: false } }
+              - column:
+                  name: amount
+                  type: DECIMAL(12,2)
+                  constraints:
+                    nullable: false
+              - column: { name: payment_method, type: VARCHAR(50), constraints: { nullable: false } }
+              - column: { name: transaction_ref, type: VARCHAR(255), constraints: { nullable: false } }
+              - column: { name: paid_at, type: TIMESTAMP, constraints: { nullable: false } }
+              - column: { name: created_at, type: TIMESTAMP }
+              - column: { name: updated_at, type: TIMESTAMP }
+
+  - changeSet:
+      id: 008-04-receipts
+      author: leanquitous
+      changes:
+        - createTable:
+            tableName: receipts
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column: { name: school_id, type: BIGINT }
+              - column: { name: payment_id, type: BIGINT, constraints: { nullable: false } }
+              - column: { name: receipt_number, type: VARCHAR(255), constraints: { nullable: false, unique: true } }
+              - column: { name: file_url, type: VARCHAR(1000), constraints: { nullable: false } }
+              - column: { name: created_at, type: TIMESTAMP }
+              - column: { name: updated_at, type: TIMESTAMP }

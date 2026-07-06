@@ -1,0 +1,33 @@
+databaseChangeLog:
+  - changeSet:
+      id: 010-01-helpdesk_tickets
+      author: leanquitous
+      changes:
+        - createTable:
+            tableName: helpdesk_tickets
+            columns:
+              - column: { name: id, type: BIGINT, autoIncrement: true, constraints: { primaryKey: true, nullable: false } }
+              - column: { name: school_id, type: BIGINT }
+              - column: { name: student_id, type: BIGINT, constraints: { nullable: false } }
+              - column: { name: raised_by_user_id, type: BIGINT, constraints: { nullable: false } }
+              - column: { name: subject, type: VARCHAR(500), constraints: { nullable: false } }
+              - column: { name: description, type: TEXT, constraints: { nullable: false } }
+              - column: { name: status, type: VARCHAR(50), constraints: { nullable: false } }
+              - column: { name: assigned_to_user_id, type: BIGINT }
+              - column: { name: created_at, type: TIMESTAMP }
+              - column: { name: updated_at, type: TIMESTAMP }
+
+  - changeSet:
+      id: 010-02-helpdesk_ticket_replies
+      author: leanquitous
+      changes:
+        - createTable:
+            tableName: helpdesk_ticket_replies
+            columns:
+              - column: { name: id, type: BIGINT, autoIncrement: true, constraints: { primaryKey: true, nullable: false } }
+              - column: { name: school_id, type: BIGINT }
+              - column: { name: ticket_id, type: BIGINT, constraints: { nullable: false } }
+              - column: { name: replied_by_user_id, type: BIGINT, constraints: { nullable: false } }
+              - column: { name: message, type: TEXT, constraints: { nullable: false } }
+              - column: { name: created_at, type: TIMESTAMP }
+              - column: { name: updated_at, type: TIMESTAMP }
