@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -109,7 +110,7 @@ public class CourseworkDtos {
     }
     @Data
     public static class SyllabusRequest {
-        private Long divisionId; private Long subjectId; private LocalDate date;
+        private Long divisionId; private Long subjectId; @JsonFormat(pattern = "yyyy-MM-dd") private LocalDate date;
         private String content; private Long loggedByFacultyId;
     }
 
@@ -127,7 +128,7 @@ public class CourseworkDtos {
     @Data
     public static class AssignmentRequest {
         private Long divisionId; private Long subjectId; private String title;
-        private String description; private String attachmentUrl; private LocalDate dueDate; private Long createdByFacultyId;
+        private String description; private String attachmentUrl; @JsonFormat(pattern = "yyyy-MM-dd") private LocalDate dueDate; private Long createdByFacultyId;
     }
 
     // ── AssignmentSubmission ──

@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -21,7 +22,7 @@ public class CommunicationDtos {
     }
     @Data
     public static class CalendarEventRequest {
-        private String title; private String description; private LocalDate eventDate; private CalendarEvent.EventType eventType;
+        private String title; private String description; @JsonFormat(pattern = "yyyy-MM-dd") private LocalDate eventDate; private CalendarEvent.EventType eventType;
     }
 
     // ── Circular ──
@@ -38,7 +39,7 @@ public class CommunicationDtos {
     @Data
     public static class CircularRequest {
         private String title; private String content; private String attachmentUrl;
-        private LocalDate publishedDate; private Integer targetClassLevel; private Long publishedByUserId;
+        @JsonFormat(pattern = "yyyy-MM-dd") private LocalDate publishedDate; private Integer targetClassLevel; private Long publishedByUserId;
     }
 
     // ── ClassAnnouncement ──
@@ -67,7 +68,7 @@ public class CommunicationDtos {
     }
     @Data
     public static class GalleryRequest {
-        private String title; private LocalDate eventDate; private Integer targetClassLevel;
+        private String title; @JsonFormat(pattern = "yyyy-MM-dd") private LocalDate eventDate; private Integer targetClassLevel;
     }
 
     // ── MediaAsset ──

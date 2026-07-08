@@ -1,24 +1,32 @@
 import { useState, useEffect, useCallback } from 'react';
 import PageHeader from '../components/PageHeader';
+import Modal from '../components/Modal';
 import { useAuth } from '../context/AuthContext';
 import { academicApi } from '../api/academic';
 import { almanacApi } from '../api/almanac';
 import { studentApi } from '../api/student';
-import { BookMarked, BookOpen, MessageSquare, Filter } from 'lucide-react';
+import { BookMarked, BookOpen, MessageSquare, Filter, Plus } from 'lucide-react';
+
+const CAN_ADD_REMARK = ['SUPER_ADMIN', 'PRINCIPAL', 'FACULTY'];
 
 export default function Almanac() {
   const { user } = useAuth();
-  const [batches, setBatches] = useState([]);
   const [classes, setClasses] = useState([]);
   const [divisions, setDivisions] = useState([]);
   const [students, setStudents] = useState([]);
   const [remarks, setRemarks] = useState([]);
   const [prayers, setPrayers] = useState([]);
 
-  const [selectedBatch, setSelectedBatch] = useState('');
+  const [activeBatchId, setActiveBatchId] = useState('');
   const [selectedClass, setSelectedClass] = useState('');
   const [selectedDivision, setSelectedDivision] = useState('');
   const [selectedStudent, setSelectedStudent] = useState('');
+
+  const [showRemarkModal, setShowRemarkModal] = useState(false);
+  const [remarkForm, setRemarkForm] = useState({ remark: '', remarkDate: new Date().toISOString().split('T')[0] });
+  const [saving, setSaving] = useState(false);
+
+  const canAddRemark = CAN_ADD_REMARK.includes(user?.role);
 
   const loadClasses = useCallback(() => {
     academicApi.getAllClasses().then((res) => setClasses(res.data)).catch(() => setClasses([]));
@@ -32,10 +40,9 @@ export default function Almanac() {
     loadClasses();
     loadPrayers();
     academicApi.getAllBatches().then((res) => {
-      setBatches(res.data);
       const active = res.data.find((b) => b.isActive);
-      if (active) setSelectedBatch(active.id);
-    }).catch(() => setBatches([]));
+      if (active) setActiveBatchId(active.id);
+    }).catch(() => {});
   }, [loadClasses, loadPrayers]);
 
   useEffect(() => {
@@ -48,14 +55,14 @@ export default function Almanac() {
   }, [selectedClass]);
 
   useEffect(() => {
-    if (selectedDivision && selectedBatch) {
-      studentApi.getAll({ batchId: selectedBatch, divisionId: selectedDivision })
+    if (selectedDivision && activeBatchId) {
+      studentApi.getAll({ batchId: activeBatchId, divisionId: selectedDivision })
         .then((res) => setStudents(res.data))
         .catch(() => setStudents([]));
     } else {
       setStudents([]);
     }
-  }, [selectedDivision, selectedBatch]);
+  }, [selectedDivision, activeBatchId]);
 
   useEffect(() => {
     if (selectedStudent) {
@@ -64,6 +71,23 @@ export default function Almanac() {
       setRemarks([]);
     }
   }, [selectedStudent]);
+
+  const handleAddRemark = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      await almanacApi.addRemark({
+        studentId: parseInt(selectedStudent),
+        remark: remarkForm.remark,
+        remarkDate: remarkForm.remarkDate,
+        remarkedByUserId: user?.id,
+      });
+      setShowRemarkModal(false);
+      setRemarkForm({ remark: '', remarkDate: new Date().toISOString().split('T')[0] });
+      almanacApi.getRemarksByStudent(selectedStudent).then((res) => setRemarks(res.data)).catch(() => setRemarks([]));
+    } catch (err) { alert('Failed: ' + (err.response?.data?.message || err.message)); }
+    finally { setSaving(false); }
+  };
 
   return (
     <div>
@@ -106,20 +130,7 @@ export default function Almanac() {
           <Filter className="w-4 h-4 theme-text-muted" />
           <h2 className="text-sm font-semibold theme-text">Filters</h2>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          <div>
-            <label className="block text-xs font-medium theme-text-muted mb-1">Batch</label>
-            <select
-              value={selectedBatch}
-              onChange={(e) => setSelectedBatch(e.target.value)}
-              className="w-full rounded-lg px-3 py-2 text-sm theme-input"
-            >
-              <option value="">All Batches</option>
-              {batches.map((b) => (
-                <option key={b.id} value={b.id}>{b.name}</option>
-              ))}
-            </select>
-          </div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div>
             <label className="block text-xs font-medium theme-text-muted mb-1">Class</label>
             <select
@@ -166,7 +177,14 @@ export default function Almanac() {
 
       {/* Remarks Section */}
       <div className="rounded-xl p-6 mb-6 theme-card">
-        <h2 className="text-lg font-semibold theme-text mb-4">Remarks</h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold theme-text">Remarks</h2>
+          {canAddRemark && selectedStudent && (
+            <button onClick={() => setShowRemarkModal(true)} className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 transition-colors">
+              <Plus className="w-4 h-4" /> Add Remark
+            </button>
+          )}
+        </div>
         {!selectedStudent ? (
           <p className="text-sm theme-text-muted py-4 text-center">Select a student to view their remarks.</p>
         ) : remarks.length === 0 ? (
@@ -177,7 +195,7 @@ export default function Almanac() {
               <div key={r.id} className="p-4 rounded-lg" style={{ border: '1px solid color-mix(in srgb, var(--text-muted) 15%, transparent)' }}>
                 <div className="flex items-center justify-between mb-1">
                   <span className="text-sm font-medium theme-text">{r.remarkType || 'General'}</span>
-                  <span className="text-xs theme-text-muted">{r.date || r.createdAt}</span>
+                  <span className="text-xs theme-text-muted">{r.remarkDate || r.createdAt}</span>
                 </div>
                 <p className="text-sm theme-text-muted">{r.content || r.remark}</p>
               </div>
@@ -196,12 +214,23 @@ export default function Almanac() {
             {prayers.map((p) => (
               <div key={p.id} className="p-4 rounded-lg" style={{ border: '1px solid color-mix(in srgb, var(--text-muted) 15%, transparent)' }}>
                 <p className="text-sm font-medium theme-text mb-1">{p.title || 'Prayer'}</p>
-                <p className="text-xs theme-text-muted line-clamp-2">{p.content || p.text}</p>
+                <p className="text-xs theme-text-muted line-clamp-2">{p.textContent || p.text || p.content}</p>
               </div>
             ))}
           </div>
         )}
       </div>
+
+      <Modal open={showRemarkModal} onClose={() => setShowRemarkModal(false)} title="Add Remark">
+        <form onSubmit={handleAddRemark} className="space-y-4">
+          <div><label className="block text-xs font-medium text-gray-500 mb-1">Remark</label><textarea required value={remarkForm.remark} onChange={(e) => setRemarkForm({ ...remarkForm, remark: e.target.value })} rows={3} placeholder="Enter remark for the student" className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" /></div>
+          <div><label className="block text-xs font-medium text-gray-500 mb-1">Date</label><input type="date" required value={remarkForm.remarkDate} onChange={(e) => setRemarkForm({ ...remarkForm, remarkDate: e.target.value })} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" /></div>
+          <div className="flex gap-2 pt-2">
+            <button type="submit" disabled={saving} className="px-4 py-2 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50">{saving ? 'Saving...' : 'Save'}</button>
+            <button type="button" onClick={() => setShowRemarkModal(false)} className="px-4 py-2 bg-gray-200 text-gray-700 text-sm rounded-lg hover:bg-gray-300 transition-colors">Cancel</button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 }

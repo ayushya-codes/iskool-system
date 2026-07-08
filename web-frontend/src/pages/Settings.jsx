@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import api from '../api/client';
+import { customizationApi } from '../api/customization';
 import PageHeader from '../components/PageHeader';
 import { Palette, Type, Globe, ToggleLeft, Upload, Tag, Trash2, Plus } from 'lucide-react';
 
@@ -13,8 +13,8 @@ export default function Settings() {
 
   useEffect(() => {
     Promise.all([
-      api.get('/school/customization').catch(() => null),
-      api.get('/school/labels').catch(() => null),
+      customizationApi.getCustomization().catch(() => null),
+      customizationApi.getAllLabels().catch(() => null),
     ]).then(([c, l]) => {
       if (c?.data) setCust(c.data);
       if (l?.data) setLabels(l.data);
@@ -25,7 +25,7 @@ export default function Settings() {
   const saveCustomization = async (updates) => {
     setSaving(true);
     try {
-      const res = await api.put('/school/customization', updates);
+      const res = await customizationApi.updateCustomization(updates);
       setCust(res.data);
     } catch (err) {
       console.error('Failed to save', err);
@@ -37,7 +37,7 @@ export default function Settings() {
   const addLabel = async () => {
     if (!newLabel.labelKey || !newLabel.labelValue) return;
     try {
-      const res = await api.post('/school/labels', newLabel);
+      const res = await customizationApi.upsertLabel(newLabel);
       setLabels([...labels, res.data]);
       setNewLabel({ labelKey: '', labelValue: '', language: 'en' });
     } catch (err) {
@@ -47,7 +47,7 @@ export default function Settings() {
 
   const deleteLabel = async (id) => {
     try {
-      await api.delete(`/school/labels/${id}`);
+      await customizationApi.deleteLabel(id);
       setLabels(labels.filter((l) => l.id !== id));
     } catch (err) {
       console.error('Failed to delete label', err);
@@ -258,7 +258,7 @@ function AssetUpload() {
   const [assets, setAssets] = useState([]);
 
   useEffect(() => {
-    api.get('/school/assets').then((res) => setAssets(res.data)).catch(() => {});
+    customizationApi.getAllAssets().then((res) => setAssets(res.data)).catch(() => {});
   }, []);
 
   const handleUpload = async (e, assetType) => {
@@ -270,9 +270,7 @@ function AssetUpload() {
       formData.append('file', file);
       formData.append('assetType', assetType);
       formData.append('uploadedByUserId', '1');
-      const res = await api.post('/school/assets/upload', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
+      const res = await customizationApi.uploadAsset(formData);
       setAssets([res.data, ...assets]);
     } catch (err) {
       console.error('Upload failed', err);

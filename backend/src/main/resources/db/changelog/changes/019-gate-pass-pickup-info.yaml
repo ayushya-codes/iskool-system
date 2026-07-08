@@ -1,0 +1,13 @@
+databaseChangeLog:
+  - changeSet:
+      id: 019-01-gate-pass-pickup-info
+      author: leanquitous
+      changes:
+        - addColumn:
+            tableName: gate_passes
+            columns:
+              - column: { name: pickup_person_name, type: VARCHAR(255) }
+              - column: { name: pickup_person_phone, type: VARCHAR(50) }
+              - column: { name: relationship, type: VARCHAR(100) }
+              - column: { name: reason, type: VARCHAR(500) }
+              - column: { name: created_by_user_id, type: BIGINT }

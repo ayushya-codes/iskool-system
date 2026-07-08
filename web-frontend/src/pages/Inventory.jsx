@@ -1,48 +1,93 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
-import api from '../api/client';
+import { inventoryApi } from '../api/inventory';
 import PageHeader from '../components/PageHeader';
-import { Package, ClipboardList, AlertTriangle, Boxes } from 'lucide-react';
+import Modal from '../components/Modal';
+import { Package, ClipboardList, AlertTriangle, Boxes, Plus, Pencil, Trash2 } from 'lucide-react';
 
-const CATEGORIES = [
-  'STATIONERY', 'LAB_EQUIPMENT', 'ACADEMICS', 'SPORTS',
-  'IT_EQUIPMENT', 'FURNITURE', 'LIBRARY', 'GENERAL'
-];
+const CATEGORIES = ['STATIONERY', 'LAB_EQUIPMENT', 'ACADEMICS', 'SPORTS', 'IT_EQUIPMENT', 'FURNITURE', 'LIBRARY', 'GENERAL'];
+const CAN_MANAGE = ['SUPER_ADMIN', 'SCHOOL_ADMIN', 'PRINCIPAL'];
+const CAN_DELETE = ['SUPER_ADMIN'];
+const CAN_INDENT = ['SUPER_ADMIN', 'SCHOOL_ADMIN', 'PRINCIPAL', 'SUPERVISOR', 'FACULTY'];
+
+const EMPTY_FORM = { name: '', category: 'STATIONERY', quantity: '', unit: '', lowStockThreshold: '', description: '' };
 
 export default function Inventory() {
   const { user } = useAuth();
-  const isAdmin = user?.role === 'SUPER_ADMIN' || user?.role === 'PRINCIPAL';
+  const isAdmin = CAN_MANAGE.includes(user?.role);
   const isFaculty = user?.role === 'FACULTY';
+  const canDelete = CAN_DELETE.includes(user?.role);
+  const canIndent = CAN_INDENT.includes(user?.role);
 
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState('');
   const [assignedCategories, setAssignedCategories] = useState([]);
+  const [showModal, setShowModal] = useState(false);
+  const [editingId, setEditingId] = useState(null);
+  const [form, setForm] = useState(EMPTY_FORM);
+  const [saving, setSaving] = useState(false);
+  const [showIndentModal, setShowIndentModal] = useState(false);
+  const [indentForm, setIndentForm] = useState({ itemId: '', quantity: '', reason: '' });
 
-  useEffect(() => {
-    async function load() {
-      try {
-        if (isAdmin) {
-          const res = selectedCategory
-            ? await api.get(`/inventory/items?category=${selectedCategory}`)
-            : await api.get('/inventory/items');
-          setItems(res.data || []);
-        } else if (isFaculty && user?.id) {
-          const [itemsRes, catRes] = await Promise.all([
-            api.get(`/inventory/items/my-assigned?facultyUserId=${user.id}`).catch(() => ({ data: [] })),
-            api.get(`/inventory/assignments/my-categories?facultyUserId=${user.id}`).catch(() => ({ data: [] })),
-          ]);
-          setItems(itemsRes.data || []);
-          setAssignedCategories(catRes.data || []);
-        }
-      } catch (err) {
-        console.error('Failed to load inventory:', err);
-      } finally {
-        setLoading(false);
-      }
+  const load = useCallback(() => {
+    setLoading(true);
+    if (isAdmin) {
+      const params = selectedCategory ? { category: selectedCategory } : {};
+      inventoryApi.getAllItems(params)
+        .then((res) => setItems(res.data || []))
+        .catch(() => setItems([]))
+        .finally(() => setLoading(false));
+    } else if (isFaculty && user?.id) {
+      Promise.all([
+        inventoryApi.getMyAssignedItems(user.id).catch(() => ({ data: [] })),
+        inventoryApi.getMyCategories(user.id).catch(() => ({ data: [] })),
+      ]).then(([itemsRes, catRes]) => {
+        setItems(itemsRes.data || []);
+        setAssignedCategories(catRes.data || []);
+      }).finally(() => setLoading(false));
+    } else {
+      setItems([]);
+      setLoading(false);
     }
-    load();
   }, [isAdmin, isFaculty, user?.id, selectedCategory]);
+
+  useEffect(() => { load(); }, [load]);
+
+  const handleOpenCreate = () => { setForm(EMPTY_FORM); setEditingId(null); setShowModal(true); };
+  const handleOpenEdit = (item) => {
+    setForm({ name: item.name || '', category: item.category || 'STATIONERY', quantity: item.quantity || '', unit: item.unit || '', lowStockThreshold: item.lowStockThreshold || '', description: item.description || '' });
+    setEditingId(item.id); setShowModal(true);
+  };
+
+  const handleSave = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      const payload = { ...form, quantity: parseInt(form.quantity) || 0, lowStockThreshold: parseInt(form.lowStockThreshold) || 0 };
+      if (editingId) await inventoryApi.updateItem(editingId, payload);
+      else await inventoryApi.createItem(payload);
+      setShowModal(false); load();
+    } catch (err) { alert('Failed to save: ' + (err.response?.data?.message || err.message)); }
+    finally { setSaving(false); }
+  };
+
+  const handleDelete = async (id) => {
+    if (!confirm('Delete this item? It will be marked inactive.')) return;
+    try { await inventoryApi.deleteItem(id); load(); }
+    catch (err) { alert('Failed to delete: ' + (err.response?.data?.message || err.message)); }
+  };
+
+  const handleIndentSubmit = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      await inventoryApi.createIndent({ ...indentForm, itemId: parseInt(indentForm.itemId), quantity: parseInt(indentForm.quantity), facultyUserId: user.id });
+      setShowIndentModal(false);
+      setIndentForm({ itemId: '', quantity: '', reason: '' });
+    } catch (err) { alert('Failed to submit indent: ' + (err.response?.data?.message || err.message)); }
+    finally { setSaving(false); }
+  };
 
   const lowStock = items.filter(i => i.lowStockThreshold && i.quantity <= i.lowStockThreshold);
   const categories = [...new Set(items.map(i => i.category))];
@@ -59,6 +104,11 @@ export default function Inventory() {
       <PageHeader
         title="Inventory"
         subtitle={isFaculty ? 'Inventory items under your management' : 'Manage stock items and indent requests'}
+        action={isAdmin && (
+          <button onClick={handleOpenCreate} className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 transition-colors">
+            <Plus className="w-4 h-4" /> Add Item
+          </button>
+        )}
       />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
@@ -75,21 +125,19 @@ export default function Inventory() {
         ))}
       </div>
 
-      {isAdmin && (
-        <div className="mb-4 flex items-center gap-3">
-          <label className="text-sm font-medium text-gray-700">Filter by Category:</label>
-          <select
-            value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
-            className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          >
+      <div className="flex items-center justify-between mb-4">
+        {isAdmin && (
+          <select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)} className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
             <option value="">All Categories</option>
-            {CATEGORIES.map((c) => (
-              <option key={c} value={c}>{c.replace(/_/g, ' ')}</option>
-            ))}
+            {CATEGORIES.map((c) => <option key={c} value={c}>{c.replace(/_/g, ' ')}</option>)}
           </select>
-        </div>
-      )}
+        )}
+        {canIndent && (
+          <button onClick={() => setShowIndentModal(true)} className="inline-flex items-center gap-2 rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+            <ClipboardList className="w-4 h-4" /> Submit Indent
+          </button>
+        )}
+      </div>
 
       {isFaculty && assignedCategories.length > 0 && (
         <div className="mb-4">
@@ -108,13 +156,14 @@ export default function Inventory() {
               <th className="px-4 py-3 font-medium">Category</th>
               <th className="px-4 py-3 font-medium">Quantity</th>
               <th className="px-4 py-3 font-medium">Low Stock Threshold</th>
+              {isAdmin && <th className="px-4 py-3 font-medium text-right">Actions</th>}
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
             {loading ? (
-              <tr><td colSpan={4} className="px-4 py-6 text-center text-gray-400">Loading...</td></tr>
+              <tr><td colSpan={isAdmin ? 5 : 4} className="px-4 py-6 text-center text-gray-400">Loading...</td></tr>
             ) : items.length === 0 ? (
-              <tr><td colSpan={4} className="px-4 py-6 text-center text-gray-400">
+              <tr><td colSpan={isAdmin ? 5 : 4} className="px-4 py-6 text-center text-gray-400">
                 {isFaculty ? 'No inventory items assigned to you yet.' : 'No inventory items found.'}
               </td></tr>
             ) : (
@@ -128,12 +177,91 @@ export default function Inventory() {
                   </td>
                   <td className="px-4 py-3 text-gray-700">{item.quantity}</td>
                   <td className="px-4 py-3 text-gray-700">{item.lowStockThreshold ?? '—'}</td>
+                  {isAdmin && (
+                    <td className="px-4 py-3 text-right">
+                      <div className="flex items-center justify-end gap-1">
+                        <button onClick={() => handleOpenEdit(item)} className="p-1.5 text-gray-400 hover:text-blue-600 transition-colors">
+                          <Pencil className="w-4 h-4" />
+                        </button>
+                        {canDelete && (
+                          <button onClick={() => handleDelete(item.id)} className="p-1.5 text-gray-400 hover:text-red-500 transition-colors">
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  )}
                 </tr>
               ))
             )}
           </tbody>
         </table>
       </div>
+
+      <Modal open={showModal} onClose={() => setShowModal(false)} title={editingId ? 'Edit Item' : 'Add Item'}>
+        <form onSubmit={handleSave} className="space-y-4">
+          <div>
+            <label className="block text-xs font-medium text-gray-500 mb-1">Name</label>
+            <input type="text" required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-gray-500 mb-1">Category</label>
+            <select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              {CATEGORIES.map((c) => <option key={c} value={c}>{c.replace(/_/g, ' ')}</option>)}
+            </select>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-medium text-gray-500 mb-1">Quantity</label>
+              <input type="number" required value={form.quantity} onChange={(e) => setForm({ ...form, quantity: e.target.value })} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-500 mb-1">Unit</label>
+              <input type="text" value={form.unit} onChange={(e) => setForm({ ...form, unit: e.target.value })} placeholder="e.g. pcs, boxes" className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+            </div>
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-gray-500 mb-1">Low Stock Threshold</label>
+            <input type="number" value={form.lowStockThreshold} onChange={(e) => setForm({ ...form, lowStockThreshold: e.target.value })} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-gray-500 mb-1">Description</label>
+            <input type="text" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+          </div>
+          <div className="flex gap-2 pt-2">
+            <button type="submit" disabled={saving} className="px-4 py-2 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50">
+              {saving ? 'Saving...' : editingId ? 'Update' : 'Create'}
+            </button>
+            <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 bg-gray-200 text-gray-700 text-sm rounded-lg hover:bg-gray-300 transition-colors">Cancel</button>
+          </div>
+        </form>
+      </Modal>
+
+      <Modal open={showIndentModal} onClose={() => setShowIndentModal(false)} title="Submit Indent Request">
+        <form onSubmit={handleIndentSubmit} className="space-y-4">
+          <div>
+            <label className="block text-xs font-medium text-gray-500 mb-1">Item</label>
+            <select required value={indentForm.itemId} onChange={(e) => setIndentForm({ ...indentForm, itemId: e.target.value })} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              <option value="">Select Item</option>
+              {items.map((i) => <option key={i.id} value={i.id}>{i.name}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-gray-500 mb-1">Quantity</label>
+            <input type="number" required value={indentForm.quantity} onChange={(e) => setIndentForm({ ...indentForm, quantity: e.target.value })} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-gray-500 mb-1">Reason</label>
+            <input type="text" required value={indentForm.reason} onChange={(e) => setIndentForm({ ...indentForm, reason: e.target.value })} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+          </div>
+          <div className="flex gap-2 pt-2">
+            <button type="submit" disabled={saving} className="px-4 py-2 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50">
+              {saving ? 'Submitting...' : 'Submit'}
+            </button>
+            <button type="button" onClick={() => setShowIndentModal(false)} className="px-4 py-2 bg-gray-200 text-gray-700 text-sm rounded-lg hover:bg-gray-300 transition-colors">Cancel</button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 }

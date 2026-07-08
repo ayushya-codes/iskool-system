@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -34,7 +35,7 @@ public class HolidayDtos {
     @Data
     public static class HolidayRequest {
         private String name;
-        private LocalDate holidayDate;
+        @JsonFormat(pattern = "yyyy-MM-dd") private LocalDate holidayDate;
         private Holiday.HolidayType type;
         private String description;
     }

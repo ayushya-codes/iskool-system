@@ -48,6 +48,7 @@ public class StudentService {
                 .admissionDate(req.getAdmissionDate())
                 .schoolId(schoolId)
                 .parentUserId(parentUserId)
+                .isActive(true)
                 .build();
         Student saved = studentRepo.save(student);
         autoGenerateAdmissionTimeline(saved, schoolId);
@@ -233,6 +234,11 @@ public class StudentService {
     public Student findByParentUserId(Long parentUserId, Long schoolId) {
         return studentRepo.findByParentUserIdAndSchoolIdAndIsActiveTrue(parentUserId, schoolId)
                 .orElseThrow(() -> new RuntimeException("No student linked to your account"));
+    }
+
+    public List<StudentResponse> findAllByParentUserId(Long parentUserId, Long schoolId) {
+        return studentRepo.findByParentUserIdAndSchoolIdAndIsActiveTrueOrderByFirstNameAsc(parentUserId, schoolId)
+                .stream().map(StudentResponse::from).toList();
     }
 
     private Long resolveParentUserId(StudentRequest req, Long schoolId) {

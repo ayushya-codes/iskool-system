@@ -27,4 +27,19 @@ public class GatePass extends BaseEntity {
 
     @Column(name = "is_used", nullable = false)
     private Boolean isUsed;
+
+    @Column(name = "pickup_person_name")
+    private String pickupPersonName;
+
+    @Column(name = "pickup_person_phone")
+    private String pickupPersonPhone;
+
+    @Column(name = "relationship")
+    private String relationship;
+
+    @Column(name = "reason")
+    private String reason;
+
+    @Column(name = "created_by_user_id")
+    private Long createdByUserId;
 }

@@ -19,7 +19,7 @@ public class SafetyController {
     private final SafetyService safetyService;
 
     @PostMapping("/gate-passes")
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'PRINCIPAL', 'FACULTY')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'PRINCIPAL', 'FACULTY', 'PARENT')")
     public ResponseEntity<GatePassResponse> createGatePass(@RequestBody GatePassRequest req) {
         return ResponseEntity.ok(safetyService.createGatePass(req));
     }

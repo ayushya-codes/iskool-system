@@ -53,7 +53,8 @@ public class ExamService {
 
     public ExamPortionResponse setPortion(ExamPortionRequest req) {
         ExamPortion portion = ExamPortion.builder().examId(req.getExamId()).subjectId(req.getSubjectId())
-                .portions(req.getPortions()).schoolId(TenantContext.getCurrentTenant()).build();
+                .portions(req.getPortions()).maxMarks(req.getMaxMarks()).examDate(req.getExamDate())
+                .schoolId(TenantContext.getCurrentTenant()).build();
         return ExamPortionResponse.from(portionRepo.save(portion));
     }
 

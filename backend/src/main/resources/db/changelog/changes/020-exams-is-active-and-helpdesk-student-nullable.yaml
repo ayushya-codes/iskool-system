@@ -1,0 +1,28 @@
+databaseChangeLog:
+  - changeSet:
+      id: 020-01-exams-is-active
+      author: leanquitous
+      changes:
+        - addColumn:
+            tableName: exams
+            columns:
+              - column: { name: is_active, type: BOOLEAN, defaultValueBoolean: true, constraints: { nullable: false } }
+
+  - changeSet:
+      id: 020-02-helpdesk-student-nullable
+      author: leanquitous
+      changes:
+        - dropNotNullConstraint:
+            tableName: helpdesk_tickets
+            columnName: student_id
+            columnDataType: BIGINT
+
+  - changeSet:
+      id: 020-03-exam-portions-max-marks
+      author: leanquitous
+      changes:
+        - addColumn:
+            tableName: exam_portions
+            columns:
+              - column: { name: max_marks, type: "DECIMAL(6,2)", defaultValueNumeric: "100" }
+              - column: { name: exam_date, type: DATE }

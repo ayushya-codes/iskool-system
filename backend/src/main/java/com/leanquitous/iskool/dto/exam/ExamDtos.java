@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
@@ -24,20 +25,23 @@ public class ExamDtos {
     @Data
     public static class ExamRequest {
         private Long divisionId; private Long batchId; private String name;
-        private Exam.ExamType examType; private LocalDate examDate;
+        private Exam.ExamType examType; @JsonFormat(pattern = "yyyy-MM-dd") private LocalDate examDate;
     }
 
     // ── ExamPortion ──
     @Data @Builder @AllArgsConstructor
     public static class ExamPortionResponse {
         private Long id; private Long examId; private Long subjectId; private String portions;
+        private BigDecimal maxMarks; private LocalDate examDate;
         public static ExamPortionResponse from(ExamPortion p) {
-            return ExamPortionResponse.builder().id(p.getId()).examId(p.getExamId()).subjectId(p.getSubjectId()).portions(p.getPortions()).build();
+            return ExamPortionResponse.builder().id(p.getId()).examId(p.getExamId()).subjectId(p.getSubjectId())
+                    .portions(p.getPortions()).maxMarks(p.getMaxMarks()).examDate(p.getExamDate()).build();
         }
     }
     @Data
     public static class ExamPortionRequest {
         private Long examId; private Long subjectId; private String portions;
+        private BigDecimal maxMarks; @JsonFormat(pattern = "yyyy-MM-dd") private LocalDate examDate;
     }
 
     // ── ExamResult ──

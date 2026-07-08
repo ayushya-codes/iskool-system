@@ -34,6 +34,16 @@ public class StudentController {
         return ResponseEntity.ok(StudentResponse.from(student));
     }
 
+    @GetMapping("/my-children")
+    @PreAuthorize("hasRole('PARENT')")
+    public ResponseEntity<List<StudentResponse>> getMyChildren(Authentication authentication) {
+        String email = authentication.getName();
+        Long schoolId = TenantContext.getCurrentTenant();
+        var user = userRepository.findByEmailAndSchoolId(email, schoolId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        return ResponseEntity.ok(studentService.findAllByParentUserId(user.getId(), schoolId));
+    }
+
     // ── Student CRUD ──
 
     @PostMapping

@@ -1,9 +1,11 @@
-import { useEffect, useState } from 'react';
-import api from '../api/client';
+import { useEffect, useState, useCallback } from 'react';
 import { holidayApi } from '../api/holiday';
+import { attendanceApi } from '../api/attendance';
+import { academicApi } from '../api/academic';
 import PageHeader from '../components/PageHeader';
+import Modal from '../components/Modal';
 import { useAuth } from '../context/AuthContext';
-import { CalendarCheck, FileText, UserX, UserCheck, CalendarDays, Plus, Trash2, Upload } from 'lucide-react';
+import { CalendarCheck, FileText, UserX, UserCheck, CalendarDays, Plus, Trash2 } from 'lucide-react';
 
 const HOLIDAY_TYPE_COLORS = {
   PUBLIC: 'bg-blue-100 text-blue-700',
@@ -14,29 +16,67 @@ const HOLIDAY_TYPE_COLORS = {
 };
 
 const CAN_MANAGE_HOLIDAYS = ['SUPER_ADMIN', 'SCHOOL_ADMIN', 'PRINCIPAL', 'SUPERVISOR'];
+const CAN_MARK_ATTENDANCE = ['SUPER_ADMIN', 'SCHOOL_ADMIN', 'PRINCIPAL', 'SUPERVISOR', 'FACULTY'];
 
 export default function Attendance() {
   const { user } = useAuth();
-  const [records, setRecords] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [holidays, setHolidays] = useState([]);
   const [holidayLoading, setHolidayLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
   const [newHoliday, setNewHoliday] = useState({ name: '', holidayDate: '', type: 'SCHOOL', description: '' });
 
+  const [classes, setClasses] = useState([]);
+  const [divisions, setDivisions] = useState([]);
+  const [selectedClass, setSelectedClass] = useState('');
+  const [selectedDivision, setSelectedDivision] = useState('');
+  const [attendanceRecords, setAttendanceRecords] = useState([]);
+  const [attendanceLoading, setAttendanceLoading] = useState(false);
+  const [showMarkModal, setShowMarkModal] = useState(false);
+  const [markForm, setMarkForm] = useState({ studentId: '', date: new Date().toISOString().split('T')[0], status: 'PRESENT', remarks: '' });
+  const [saving, setSaving] = useState(false);
+
   const canManage = user && CAN_MANAGE_HOLIDAYS.includes(user.role);
+  const canMark = user && CAN_MARK_ATTENDANCE.includes(user.role);
 
   useEffect(() => {
-    api.get('/attendance/records')
-      .then((res) => setRecords(res.data))
-      .catch(() => setRecords([]))
-      .finally(() => setLoading(false));
-
     holidayApi.getAll()
       .then((res) => setHolidays(res.data))
       .catch(() => setHolidays([]))
       .finally(() => setHolidayLoading(false));
+
+    academicApi.getAllClasses().then((res) => setClasses(res.data || [])).catch(() => setClasses([]));
   }, []);
+
+  useEffect(() => {
+    if (!selectedClass) { setDivisions([]); return; }
+    academicApi.getDivisionsByClass(selectedClass)
+      .then((res) => setDivisions(res.data || []))
+      .catch(() => setDivisions([]));
+  }, [selectedClass]);
+
+  const loadAttendance = useCallback(() => {
+    if (!selectedDivision) { setAttendanceRecords([]); return; }
+    setAttendanceLoading(true);
+    const today = new Date().toISOString().split('T')[0];
+    attendanceApi.getByDivisionAndDate(selectedDivision, today)
+      .then((res) => setAttendanceRecords(res.data || []))
+      .catch(() => setAttendanceRecords([]))
+      .finally(() => setAttendanceLoading(false));
+  }, [selectedDivision]);
+
+  useEffect(() => { loadAttendance(); }, [loadAttendance]);
+
+  const handleMarkAttendance = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      await attendanceApi.markSingle({ ...markForm, studentId: parseInt(markForm.studentId), markedByUserId: user?.id });
+      setShowMarkModal(false);
+      setMarkForm({ studentId: '', date: new Date().toISOString().split('T')[0], status: 'PRESENT', remarks: '' });
+      loadAttendance();
+    } catch (err) { alert('Failed to mark attendance: ' + (err.response?.data?.message || err.message)); }
+    finally { setSaving(false); }
+  };
 
   const handleAddHoliday = async (e) => {
     e.preventDefault();
@@ -59,11 +99,16 @@ export default function Attendance() {
     }
   };
 
+  const presentCount = attendanceRecords.filter(r => r.status === 'PRESENT').length;
+  const absentCount = attendanceRecords.filter(r => r.status === 'ABSENT').length;
+  const onLeaveCount = attendanceRecords.filter(r => r.status === 'ON_LEAVE').length;
+  const attendanceRate = attendanceRecords.length > 0 ? Math.round((presentCount / attendanceRecords.length) * 100) + '%' : '—';
+
   const cards = [
-    { label: 'Present Today', value: '—', icon: UserCheck, color: 'bg-green-500' },
-    { label: 'Absent Today', value: '—', icon: UserX, color: 'bg-red-500' },
-    { label: 'On Leave', value: '—', icon: FileText, color: 'bg-amber-500' },
-    { label: 'Attendance Rate', value: '—', icon: CalendarCheck, color: 'bg-blue-500' },
+    { label: 'Present Today', value: presentCount, icon: UserCheck, color: 'bg-green-500' },
+    { label: 'Absent Today', value: absentCount, icon: UserX, color: 'bg-red-500' },
+    { label: 'On Leave', value: onLeaveCount, icon: FileText, color: 'bg-amber-500' },
+    { label: 'Attendance Rate', value: attendanceRate, icon: CalendarCheck, color: 'bg-blue-500' },
   ];
 
   return (
@@ -190,16 +235,78 @@ export default function Attendance() {
         )}
       </div>
 
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Recent Attendance Records</h2>
-        {loading ? (
-          <p className="text-sm text-gray-400">Loading...</p>
-        ) : records.length === 0 ? (
-          <p className="text-sm text-gray-400">No attendance records found.</p>
+      {/* Attendance Marking Section */}
+      <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+            <CalendarCheck className="w-5 h-5 text-gray-500" />
+            Today's Attendance
+          </h2>
+          {canMark && (
+            <button onClick={() => setShowMarkModal(true)} className="flex items-center gap-1 px-3 py-1.5 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-700 transition-colors">
+              <Plus className="w-4 h-4" />
+              Mark Attendance
+            </button>
+          )}
+        </div>
+
+        <div className="flex items-center gap-3 mb-4">
+          <select value={selectedClass} onChange={(e) => { setSelectedClass(e.target.value); setSelectedDivision(''); }} className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            <option value="">Select Class</option>
+            {classes.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+          </select>
+          <select value={selectedDivision} onChange={(e) => setSelectedDivision(e.target.value)} disabled={!selectedClass} className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-100">
+            <option value="">Select Division</option>
+            {divisions.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
+          </select>
+        </div>
+
+        {attendanceLoading ? (
+          <p className="text-sm text-gray-400">Loading attendance...</p>
+        ) : !selectedDivision ? (
+          <p className="text-sm text-gray-400">Select a class and division to view attendance.</p>
+        ) : attendanceRecords.length === 0 ? (
+          <p className="text-sm text-gray-400">No attendance records for today.</p>
         ) : (
-          <p className="text-sm text-gray-400">{records.length} records found.</p>
+          <div className="overflow-hidden rounded-lg border border-gray-200">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-gray-200 text-left text-gray-500 bg-gray-50">
+                  <th className="px-4 py-2 font-medium">Student</th>
+                  <th className="px-4 py-2 font-medium">Status</th>
+                  <th className="px-4 py-2 font-medium">Remarks</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {attendanceRecords.map((r) => (
+                  <tr key={r.id} className="hover:bg-gray-50">
+                    <td className="px-4 py-2 text-gray-900">{r.studentName || `Student #${r.studentId}`}</td>
+                    <td className="px-4 py-2">
+                      <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${r.status === 'PRESENT' ? 'bg-green-100 text-green-700' : r.status === 'ABSENT' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'}`}>
+                        {r.status}
+                      </span>
+                    </td>
+                    <td className="px-4 py-2 text-gray-500">{r.remarks || '—'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
+
+      <Modal open={showMarkModal} onClose={() => setShowMarkModal(false)} title="Mark Attendance">
+        <form onSubmit={handleMarkAttendance} className="space-y-4">
+          <div><label className="block text-xs font-medium text-gray-500 mb-1">Student ID</label><input type="number" required value={markForm.studentId} onChange={(e) => setMarkForm({ ...markForm, studentId: e.target.value })} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" /></div>
+          <div><label className="block text-xs font-medium text-gray-500 mb-1">Date</label><input type="date" required value={markForm.date} onChange={(e) => setMarkForm({ ...markForm, date: e.target.value })} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" /></div>
+          <div><label className="block text-xs font-medium text-gray-500 mb-1">Status</label><select value={markForm.status} onChange={(e) => setMarkForm({ ...markForm, status: e.target.value })} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"><option value="PRESENT">Present</option><option value="ABSENT">Absent</option><option value="ON_LEAVE">On Leave</option></select></div>
+          <div><label className="block text-xs font-medium text-gray-500 mb-1">Remarks (optional)</label><input type="text" value={markForm.remarks} onChange={(e) => setMarkForm({ ...markForm, remarks: e.target.value })} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" /></div>
+          <div className="flex gap-2 pt-2">
+            <button type="submit" disabled={saving} className="px-4 py-2 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50">{saving ? 'Saving...' : 'Mark'}</button>
+            <button type="button" onClick={() => setShowMarkModal(false)} className="px-4 py-2 bg-gray-200 text-gray-700 text-sm rounded-lg hover:bg-gray-300 transition-colors">Cancel</button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 }
