@@ -1,6 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import api from '../api/client';
+import { studentApi } from '../api/student';
+import { attendanceApi } from '../api/attendance';
+import { communicationApi } from '../api/communication';
+import { examApi } from '../api/exam';
+import { safetyApi } from '../api/safety';
 import PageHeader from '../components/PageHeader';
 import {
   User, Calendar, BookOpen, ClipboardCheck, ShieldCheck, Megaphone,
@@ -23,15 +27,15 @@ export default function ParentMyChild() {
     async function load() {
       try {
         // 1. Get the child linked to parent
-        const childRes = await api.get('/students/my-child');
+        const childRes = await studentApi.getMyChild();
         if (!mounted) return;
         const childData = childRes.data;
         setChild(childData);
 
         // 2. Fetch enrollment, attendance, and other data using child ID
         const [enrollRes, attRes, announceRes] = await Promise.all([
-          api.get(`/students/${childData.id}/enrollments`).catch(() => ({ data: [] })),
-          api.get(`/attendance/student/${childData.id}?from=2024-01-01&to=2025-12-31`).catch(() => ({ data: [] })),
+          studentApi.getEnrollments(childData.id).catch(() => ({ data: [] })),
+          attendanceApi.getByStudentRange(childData.id, '2024-01-01', '2025-12-31').catch(() => ({ data: [] })),
           // We need divisionId for announcements - get it from enrollment first
           Promise.resolve({ data: [] }),
         ]);
@@ -44,17 +48,17 @@ export default function ParentMyChild() {
         // 3. Fetch announcements for the child's division
         const divisionId = enrollments[0]?.divisionId;
         if (divisionId) {
-          const announceRes = await api.get(`/communication/announcements/division/${divisionId}`).catch(() => ({ data: [] }));
+          const announceRes = await communicationApi.getAnnouncementsByDivision(divisionId).catch(() => ({ data: [] }));
           if (mounted) setAnnouncements(announceRes.data || []);
         }
 
         // 4. Fetch exam results: get exams by division, then results
         if (divisionId) {
-          const examsRes = await api.get(`/exams/division/${divisionId}`).catch(() => ({ data: [] }));
+          const examsRes = await examApi.getByDivision(divisionId).catch(() => ({ data: [] }));
           const examList = examsRes.data || [];
           const results = [];
           for (const exam of examList.slice(0, 5)) {
-            const resultRes = await api.get(`/exams/${exam.id}/results/student/${childData.id}`).catch(() => ({ data: [] }));
+            const resultRes = await examApi.getResultsByStudent(exam.id, childData.id).catch(() => ({ data: [] }));
             const examResults = resultRes.data || [];
             for (const r of examResults) {
               results.push({ ...r, examName: exam.name });
@@ -345,8 +349,8 @@ function SafetyTab({ studentId }) {
   useEffect(() => {
     if (!studentId) return;
     Promise.all([
-      api.get(`/safety/gate-passes/student/${studentId}`).catch(() => ({ data: [] })),
-      api.get(`/safety/proxy-pickups/student/${studentId}`).catch(() => ({ data: [] })),
+      safetyApi.getGatePassesByStudent(studentId).catch(() => ({ data: [] })),
+      safetyApi.getProxyPickupsByStudent(studentId).catch(() => ({ data: [] })),
     ]).then(([gpRes, ppRes]) => {
       setGatePasses(gpRes.data || []);
       setProxyPickups(ppRes.data || []);

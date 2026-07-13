@@ -1,6 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import api from '../api/client';
+import { studentApi } from '../api/student';
+import { attendanceApi } from '../api/attendance';
+import { communicationApi } from '../api/communication';
+import { examApi } from '../api/exam';
+import { safetyApi } from '../api/safety';
 import PageHeader from '../components/PageHeader';
 import {
   User, Calendar, BookOpen, ClipboardCheck, ShieldCheck, Megaphone,
@@ -22,14 +26,14 @@ export default function StudentProfile() {
     let mounted = true;
     async function load() {
       try {
-        const studentRes = await api.get(`/students/${id}`);
+        const studentRes = await studentApi.getById(id);
         if (!mounted) return;
         const studentData = studentRes.data;
         setStudent(studentData);
 
         const [enrollRes, attRes] = await Promise.all([
-          api.get(`/students/${id}/enrollments`).catch(() => ({ data: [] })),
-          api.get(`/attendance/student/${id}?from=2024-01-01&to=2025-12-31`).catch(() => ({ data: [] })),
+          studentApi.getEnrollments(id).catch(() => ({ data: [] })),
+          attendanceApi.getByStudentRange(id, '2024-01-01', '2025-12-31').catch(() => ({ data: [] })),
         ]);
         if (!mounted) return;
 
@@ -39,16 +43,16 @@ export default function StudentProfile() {
 
         const divisionId = enrollments[0]?.divisionId;
         if (divisionId) {
-          const announceRes = await api.get(`/communication/announcements/division/${divisionId}`).catch(() => ({ data: [] }));
+          const announceRes = await communicationApi.getAnnouncementsByDivision(divisionId).catch(() => ({ data: [] }));
           if (mounted) setAnnouncements(announceRes.data || []);
         }
 
         if (divisionId) {
-          const examsRes = await api.get(`/exams/division/${divisionId}`).catch(() => ({ data: [] }));
+          const examsRes = await examApi.getByDivision(divisionId).catch(() => ({ data: [] }));
           const examList = examsRes.data || [];
           const results = [];
           for (const exam of examList.slice(0, 5)) {
-            const resultRes = await api.get(`/exams/${exam.id}/results/student/${id}`).catch(() => ({ data: [] }));
+            const resultRes = await examApi.getResultsByStudent(exam.id, id).catch(() => ({ data: [] }));
             const examResults = resultRes.data || [];
             for (const r of examResults) {
               results.push({ ...r, examName: exam.name });
@@ -347,8 +351,8 @@ function SafetyTab({ studentId }) {
   useEffect(() => {
     if (!studentId) return;
     Promise.all([
-      api.get(`/safety/gate-passes/student/${studentId}`).catch(() => ({ data: [] })),
-      api.get(`/safety/proxy-pickups/student/${studentId}`).catch(() => ({ data: [] })),
+      safetyApi.getGatePassesByStudent(studentId).catch(() => ({ data: [] })),
+      safetyApi.getProxyPickupsByStudent(studentId).catch(() => ({ data: [] })),
     ]).then(([gpRes, ppRes]) => {
       setGatePasses(gpRes.data || []);
       setProxyPickups(ppRes.data || []);
