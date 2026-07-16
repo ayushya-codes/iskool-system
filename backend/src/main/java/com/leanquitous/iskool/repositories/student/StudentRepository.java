@@ -19,4 +19,6 @@ public interface StudentRepository extends JpaRepository<Student, Long> {
     List<Student> findBySchoolIdOrderByFirstNameAsc(Long schoolId);
 
     Optional<Student> findByParentUserIdAndSchoolId(Long parentUserId, Long schoolId);
+
+    long countBySchoolIdAndIsActiveTrue(Long schoolId);
 }

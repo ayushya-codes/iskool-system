@@ -13,4 +13,6 @@ public interface FacultyRepository extends JpaRepository<Faculty, Long> {
     List<Faculty> findBySchoolId(Long schoolId);
 
     Optional<Faculty> findBySchoolIdAndUserId(Long schoolId, Long userId);
+
+    long countBySchoolId(Long schoolId);
 }

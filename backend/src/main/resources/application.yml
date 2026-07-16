@@ -10,6 +10,10 @@ spring:
     username: postgres
     password: qjrJL1QiGizK8wQZ
     driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 10000
 
   jpa:
     hibernate:
@@ -17,8 +21,10 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
-        format_sql: true
-    show-sql: true
+        format_sql: false
+        jdbc.batch_size: 20
+        default_batch_fetch_size: 20
+    show-sql: false
 
   liquibase:
     enabled: true

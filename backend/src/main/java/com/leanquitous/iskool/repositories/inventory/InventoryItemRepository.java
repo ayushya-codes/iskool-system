@@ -17,4 +17,6 @@ public interface InventoryItemRepository extends JpaRepository<InventoryItem, Lo
 
     List<InventoryItem> findBySchoolIdAndCategory(Long schoolId, InventoryItem.Category category);
     List<InventoryItem> findBySchoolIdAndCategoryAndIsActiveTrue(Long schoolId, InventoryItem.Category category);
+
+    long countBySchoolIdAndIsActiveTrue(Long schoolId);
 }
