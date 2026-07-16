@@ -12,7 +12,7 @@ export default function ModulePage({ title, subtitle, columns, data, loading, on
           onAdd && (
             <button
               onClick={onAdd}
-              className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 transition-colors"
+              className="inline-flex items-center gap-2 rounded-lg gradient-bg-hover px-4 py-2.5 text-sm font-semibold text-white transition-all duration-300 hover:scale-[1.02] focus-ring shadow-glow"
             >
               <Plus className="w-4 h-4" />
               {addLabel || 'Add New'}

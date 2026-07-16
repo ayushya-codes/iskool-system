@@ -5,6 +5,7 @@ import { academicApi } from '../api/academic';
 import PageHeader from '../components/PageHeader';
 import Modal from '../components/Modal';
 import { ClipboardList, Award, FileText, TrendingUp, Plus, Trash2, Calendar } from 'lucide-react';
+import { LoadingText, Tabs, FormField, FormActions } from '../components/ui';
 
 const CAN_MANAGE = ['SUPER_ADMIN', 'SCHOOL_ADMIN', 'PRINCIPAL'];
 const CAN_DELETE = ['SUPER_ADMIN'];
@@ -136,18 +137,18 @@ export default function Exams() {
   };
 
   const cards = [
-    { label: 'Exams', value: activeTab === 'exams' ? data.length : '—', icon: ClipboardList, color: 'bg-red-500' },
+    { label: 'Exams', value: activeTab === 'exams' ? data.length : '—', icon: ClipboardList, color: '[color-mix(in_srgb,var(--danger)_10%,transparent)]0' },
     { label: 'Schedule', value: activeTab === 'schedule' ? data.length : '—', icon: Calendar, color: 'bg-orange-500' },
-    { label: 'Grading Schemes', value: activeTab === 'grading' ? data.length : '—', icon: Award, color: 'bg-purple-500' },
-    { label: 'Results', value: activeTab === 'results' ? data.length : '—', icon: TrendingUp, color: 'bg-green-500' },
+    { label: 'Grading Schemes', value: activeTab === 'grading' ? data.length : '—', icon: Award, color: '[color-mix(in_srgb,var(--accent-secondary)_10%,transparent)]0' },
+    { label: 'Results', value: activeTab === 'results' ? data.length : '—', icon: TrendingUp, color: '[color-mix(in_srgb,var(--success)_10%,transparent)]0' },
   ];
 
   if (isParent) {
     return (
       <div>
         <PageHeader title="Exams" subtitle="Exam scheduling, results, grading, and report cards" />
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
-          <p className="text-sm text-gray-500">You can view your child's exam results on the <strong>My Child</strong> page.</p>
+        <div className="rounded-xl theme-card p-6">
+          <p className="text-sm theme-text-muted">You can view your child's exam results on the <strong>My Child</strong> page.</p>
         </div>
       </div>
     );
@@ -159,68 +160,62 @@ export default function Exams() {
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {cards.map(({ label, value, icon: Icon, color }) => (
-          <div key={label} className="bg-white rounded-xl border border-gray-200 p-4 flex items-center gap-3">
+          <div key={label} className="rounded-xl theme-card p-4 flex items-center gap-3">
             <div className={`w-10 h-10 ${color} rounded-lg flex items-center justify-center shrink-0`}>
               <Icon className="w-5 h-5 text-white" />
             </div>
             <div>
-              <p className="text-xs text-gray-500">{label}</p>
-              <p className="text-xl font-bold text-gray-900">{value}</p>
+              <p className="text-xs theme-text-muted">{label}</p>
+              <p className="text-xl font-bold theme-text">{value}</p>
             </div>
           </div>
         ))}
       </div>
 
-      <div className="flex items-center gap-1 mb-4 bg-white rounded-xl border border-gray-200 p-1">
-        {TABS.map((tab) => (
-          <button key={tab.key} onClick={() => setActiveTab(tab.key)} className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${activeTab === tab.key ? 'bg-indigo-600 text-white' : 'text-gray-600 hover:bg-gray-100'}`}>
-            {tab.label}
-          </button>
-        ))}
-      </div>
+      <Tabs tabs={TABS.map(t => ({ id: t.key, label: t.label }))} activeTab={activeTab} onChange={setActiveTab} layout="sidebar" />
 
       <div className="flex items-center justify-between mb-4">
-        <select value={selectedBatch} onChange={(e) => setSelectedBatch(e.target.value)} className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+        <select value={selectedBatch} onChange={(e) => setSelectedBatch(e.target.value)} className="rounded-lg theme-input px-3 py-2 text-sm focus-ring">
           <option value="">Select Batch</option>
           {batches.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
         </select>
         {canManage && activeTab !== 'results' && activeTab !== 'reportCards' && (
-          <button onClick={handleOpenCreate} className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 transition-colors">
+          <button onClick={handleOpenCreate} className="inline-flex items-center gap-2 rounded-lg gradient-bg px-4 py-2 text-sm font-semibold text-white gradient-bg-hover transition-colors">
             <Plus className="w-4 h-4" /> Add {TABS.find((t) => t.key === activeTab)?.label.slice(0, -1)}
           </button>
         )}
         {canManage && activeTab === 'reportCards' && (
-          <button onClick={handleOpenCreate} className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 transition-colors">
+          <button onClick={handleOpenCreate} className="inline-flex items-center gap-2 rounded-lg gradient-bg px-4 py-2 text-sm font-semibold text-white gradient-bg-hover transition-colors">
             <Plus className="w-4 h-4" /> Generate Report Card
           </button>
         )}
         {canEnterResults && activeTab === 'results' && (
-          <button onClick={handleOpenCreate} className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 transition-colors">
+          <button onClick={handleOpenCreate} className="inline-flex items-center gap-2 rounded-lg gradient-bg px-4 py-2 text-sm font-semibold text-white gradient-bg-hover transition-colors">
             <Plus className="w-4 h-4" /> Enter Result
           </button>
         )}
       </div>
 
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+      <div className="rounded-xl theme-card overflow-hidden">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-gray-200 text-left text-gray-500 bg-gray-50">
+            <tr className="border-b [var(--divider)] text-left theme-text-muted [var(--sidebar-hover-bg)]">
               {columns[activeTab].map((col) => <th key={col.key} className="px-4 py-3 font-medium">{col.label}</th>)}
               {canDelete && (activeTab === 'exams' || activeTab === 'grading') && <th className="px-4 py-3 font-medium text-right">Actions</th>}
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100">
+          <tbody className="divide-y theme-divider">
             {loading ? (
-              <tr><td colSpan={columns[activeTab].length + 1} className="px-4 py-6 text-center text-gray-400">Loading...</td></tr>
+              <tr><td colSpan={columns[activeTab].length + 1} className="px-4 py-6"><LoadingText /></td></tr>
             ) : data.length === 0 ? (
-              <tr><td colSpan={columns[activeTab].length + 1} className="px-4 py-6 text-center text-gray-400">No {activeTab} found.</td></tr>
+              <tr><td colSpan={columns[activeTab].length + 1} className="px-4 py-6 text-center theme-text-faint">No {activeTab} found.</td></tr>
             ) : (
               data.map((row) => (
-                <tr key={row.id} className="hover:bg-gray-50 transition-colors">
-                  {columns[activeTab].map((col) => <td key={col.key} className="px-4 py-3 text-gray-700">{row[col.key] || '—'}</td>)}
+                <tr key={row.id} className="hover:[var(--sidebar-hover-bg)] transition-colors">
+                  {columns[activeTab].map((col) => <td key={col.key} className="px-4 py-3 theme-text">{row[col.key] || '—'}</td>)}
                   {canDelete && (activeTab === 'exams' || activeTab === 'grading') && (
                     <td className="px-4 py-3 text-right">
-                      <button onClick={() => handleDelete(row.id)} className="p-1.5 text-gray-400 hover:text-red-500 transition-colors">
+                      <button onClick={() => handleDelete(row.id)} className="p-1.5 theme-text-faint hover:[color:var(--danger)] transition-colors">
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </td>
@@ -236,48 +231,45 @@ export default function Exams() {
         <form onSubmit={handleSave} className="space-y-4">
           {activeTab === 'exams' && (
             <>
-              <div><label className="block text-xs font-medium text-gray-500 mb-1">Exam Name</label><input type="text" required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" /></div>
-              <div><label className="block text-xs font-medium text-gray-500 mb-1">Exam Type</label><select required value={form.examType} onChange={(e) => setForm({ ...form, examType: e.target.value })} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"><option value="UNIT">Unit</option><option value="TERMINAL">Terminal</option></select></div>
-              <div><label className="block text-xs font-medium text-gray-500 mb-1">Exam Date</label><input type="date" required value={form.examDate} onChange={(e) => setForm({ ...form, examDate: e.target.value })} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" /></div>
-              <div><label className="block text-xs font-medium text-gray-500 mb-1">Division ID (optional)</label><input type="number" value={form.divisionId} onChange={(e) => setForm({ ...form, divisionId: e.target.value })} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" /></div>
+              <FormField label="Exam Name"><input type="text" required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="w-full rounded-lg theme-input px-3 py-2 text-sm focus-ring" /></FormField>
+              <FormField label="Exam Type"><select required value={form.examType} onChange={(e) => setForm({ ...form, examType: e.target.value })} className="w-full rounded-lg theme-input px-3 py-2 text-sm focus-ring"><option value="UNIT">Unit</option><option value="TERMINAL">Terminal</option></select></FormField>
+              <FormField label="Exam Date"><input type="date" required value={form.examDate} onChange={(e) => setForm({ ...form, examDate: e.target.value })} className="w-full rounded-lg theme-input px-3 py-2 text-sm focus-ring" /></FormField>
+              <FormField label="Division ID (optional)"><input type="number" value={form.divisionId} onChange={(e) => setForm({ ...form, divisionId: e.target.value })} className="w-full rounded-lg theme-input px-3 py-2 text-sm focus-ring" /></FormField>
             </>
           )}
           {activeTab === 'schedule' && (
             <>
-              <div><label className="block text-xs font-medium text-gray-500 mb-1">Exam ID</label><input type="number" required value={form.examId} onChange={(e) => setForm({ ...form, examId: e.target.value })} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" /></div>
-              <div><label className="block text-xs font-medium text-gray-500 mb-1">Subject ID</label><input type="number" required value={form.subjectId} onChange={(e) => setForm({ ...form, subjectId: e.target.value })} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" /></div>
-              <div><label className="block text-xs font-medium text-gray-500 mb-1">Exam Date</label><input type="date" value={form.examDate} onChange={(e) => setForm({ ...form, examDate: e.target.value })} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" /></div>
-              <div><label className="block text-xs font-medium text-gray-500 mb-1">Max Marks</label><input type="number" step="0.01" required value={form.maxMarks} onChange={(e) => setForm({ ...form, maxMarks: e.target.value })} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" /></div>
-              <div><label className="block text-xs font-medium text-gray-500 mb-1">Portions / Syllabus</label><textarea value={form.portions} onChange={(e) => setForm({ ...form, portions: e.target.value })} rows={3} placeholder="e.g. Chapters 1-5, Algebra, etc." className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" /></div>
+              <FormField label="Exam ID"><input type="number" required value={form.examId} onChange={(e) => setForm({ ...form, examId: e.target.value })} className="w-full rounded-lg theme-input px-3 py-2 text-sm focus-ring" /></FormField>
+              <FormField label="Subject ID"><input type="number" required value={form.subjectId} onChange={(e) => setForm({ ...form, subjectId: e.target.value })} className="w-full rounded-lg theme-input px-3 py-2 text-sm focus-ring" /></FormField>
+              <FormField label="Exam Date"><input type="date" value={form.examDate} onChange={(e) => setForm({ ...form, examDate: e.target.value })} className="w-full rounded-lg theme-input px-3 py-2 text-sm focus-ring" /></FormField>
+              <FormField label="Max Marks"><input type="number" step="0.01" required value={form.maxMarks} onChange={(e) => setForm({ ...form, maxMarks: e.target.value })} className="w-full rounded-lg theme-input px-3 py-2 text-sm focus-ring" /></FormField>
+              <FormField label="Portions / Syllabus"><textarea value={form.portions} onChange={(e) => setForm({ ...form, portions: e.target.value })} rows={3} placeholder="e.g. Chapters 1-5, Algebra, etc." className="w-full rounded-lg theme-input px-3 py-2 text-sm focus-ring" /></FormField>
             </>
           )}
           {activeTab === 'grading' && (
             <>
-              <div><label className="block text-xs font-medium text-gray-500 mb-1">Scheme Name</label><input type="text" required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" /></div>
-              <div><label className="block text-xs font-medium text-gray-500 mb-1">Grade Label</label><input type="text" required placeholder="e.g. A, B, C" value={form.gradeLabel} onChange={(e) => setForm({ ...form, gradeLabel: e.target.value })} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" /></div>
-              <div><label className="block text-xs font-medium text-gray-500 mb-1">Min Percentage</label><input type="number" step="0.01" required value={form.minPercentage} onChange={(e) => setForm({ ...form, minPercentage: e.target.value })} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" /></div>
-              <div><label className="block text-xs font-medium text-gray-500 mb-1">Max Percentage</label><input type="number" step="0.01" required value={form.maxPercentage} onChange={(e) => setForm({ ...form, maxPercentage: e.target.value })} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" /></div>
+              <FormField label="Scheme Name"><input type="text" required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="w-full rounded-lg theme-input px-3 py-2 text-sm focus-ring" /></FormField>
+              <FormField label="Grade Label"><input type="text" required placeholder="e.g. A, B, C" value={form.gradeLabel} onChange={(e) => setForm({ ...form, gradeLabel: e.target.value })} className="w-full rounded-lg theme-input px-3 py-2 text-sm focus-ring" /></FormField>
+              <FormField label="Min Percentage"><input type="number" step="0.01" required value={form.minPercentage} onChange={(e) => setForm({ ...form, minPercentage: e.target.value })} className="w-full rounded-lg theme-input px-3 py-2 text-sm focus-ring" /></FormField>
+              <FormField label="Max Percentage"><input type="number" step="0.01" required value={form.maxPercentage} onChange={(e) => setForm({ ...form, maxPercentage: e.target.value })} className="w-full rounded-lg theme-input px-3 py-2 text-sm focus-ring" /></FormField>
             </>
           )}
           {activeTab === 'results' && (
             <>
-              <div><label className="block text-xs font-medium text-gray-500 mb-1">Exam ID</label><input type="number" required value={form.examId} onChange={(e) => setForm({ ...form, examId: e.target.value })} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" /></div>
-              <div><label className="block text-xs font-medium text-gray-500 mb-1">Student ID</label><input type="number" required value={form.studentId} onChange={(e) => setForm({ ...form, studentId: e.target.value })} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" /></div>
-              <div><label className="block text-xs font-medium text-gray-500 mb-1">Subject ID</label><input type="number" value={form.subjectId} onChange={(e) => setForm({ ...form, subjectId: e.target.value })} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" /></div>
-              <div><label className="block text-xs font-medium text-gray-500 mb-1">Marks Obtained</label><input type="number" step="0.01" required value={form.marksObtained} onChange={(e) => setForm({ ...form, marksObtained: e.target.value })} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" /></div>
-              <div><label className="block text-xs font-medium text-gray-500 mb-1">Max Marks</label><input type="number" step="0.01" required value={form.maxMarks} onChange={(e) => setForm({ ...form, maxMarks: e.target.value })} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" /></div>
+              <FormField label="Exam ID"><input type="number" required value={form.examId} onChange={(e) => setForm({ ...form, examId: e.target.value })} className="w-full rounded-lg theme-input px-3 py-2 text-sm focus-ring" /></FormField>
+              <FormField label="Student ID"><input type="number" required value={form.studentId} onChange={(e) => setForm({ ...form, studentId: e.target.value })} className="w-full rounded-lg theme-input px-3 py-2 text-sm focus-ring" /></FormField>
+              <FormField label="Subject ID"><input type="number" value={form.subjectId} onChange={(e) => setForm({ ...form, subjectId: e.target.value })} className="w-full rounded-lg theme-input px-3 py-2 text-sm focus-ring" /></FormField>
+              <FormField label="Marks Obtained"><input type="number" step="0.01" required value={form.marksObtained} onChange={(e) => setForm({ ...form, marksObtained: e.target.value })} className="w-full rounded-lg theme-input px-3 py-2 text-sm focus-ring" /></FormField>
+              <FormField label="Max Marks"><input type="number" step="0.01" required value={form.maxMarks} onChange={(e) => setForm({ ...form, maxMarks: e.target.value })} className="w-full rounded-lg theme-input px-3 py-2 text-sm focus-ring" /></FormField>
             </>
           )}
           {activeTab === 'reportCards' && (
             <>
-              <div><label className="block text-xs font-medium text-gray-500 mb-1">Student ID</label><input type="number" required value={form.studentId} onChange={(e) => setForm({ ...form, studentId: e.target.value })} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" /></div>
-              <div><label className="block text-xs font-medium text-gray-500 mb-1">File URL</label><input type="text" value={form.fileUrl} onChange={(e) => setForm({ ...form, fileUrl: e.target.value })} placeholder="Will be generated" className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" /></div>
+              <FormField label="Student ID"><input type="number" required value={form.studentId} onChange={(e) => setForm({ ...form, studentId: e.target.value })} className="w-full rounded-lg theme-input px-3 py-2 text-sm focus-ring" /></FormField>
+              <FormField label="File URL"><input type="text" value={form.fileUrl} onChange={(e) => setForm({ ...form, fileUrl: e.target.value })} placeholder="Will be generated" className="w-full rounded-lg theme-input px-3 py-2 text-sm focus-ring" /></FormField>
             </>
           )}
-          <div className="flex gap-2 pt-2">
-            <button type="submit" disabled={saving} className="px-4 py-2 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50">{saving ? 'Saving...' : 'Create'}</button>
-            <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 bg-gray-200 text-gray-700 text-sm rounded-lg hover:bg-gray-300 transition-colors">Cancel</button>
-          </div>
+          <FormActions onSubmit={handleSave} onCancel={() => setShowModal(false)} submitLabel="Create" submitting={saving} />
         </form>
       </Modal>
     </div>

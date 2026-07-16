@@ -6,6 +6,7 @@ import { academicApi } from '../api/academic';
 import PageHeader from '../components/PageHeader';
 import Modal from '../components/Modal';
 import { Plus, Pencil, Trash2, Eye } from 'lucide-react';
+import { FormField, FormActions, FilterBar, FilterSelect, LoadingText } from '../components/ui';
 
 const CAN_CREATE = ['SUPER_ADMIN', 'SCHOOL_ADMIN', 'PRINCIPAL', 'CLERK'];
 const CAN_DELETE = ['SUPER_ADMIN', 'SCHOOL_ADMIN', 'PRINCIPAL'];
@@ -117,136 +118,113 @@ export default function Students() {
         title="Students"
         subtitle="View and manage student records"
         action={canCreate && (
-          <button onClick={handleOpenCreate} className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 transition-colors">
+          <button onClick={handleOpenCreate} className="inline-flex items-center gap-2 rounded-lg gradient-bg-hover px-4 py-2.5 text-sm font-semibold text-white transition-all duration-300 hover:scale-[1.02] focus-ring shadow-glow">
             <Plus className="w-4 h-4" /> Add Student
           </button>
         )}
       />
 
-      <div className="bg-white rounded-xl border border-gray-200 p-4 mb-6">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1.5">Academic Batch</label>
-            <select value={selectedBatch} onChange={(e) => setSelectedBatch(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
-              <option value="">All Batches</option>
-              {batches.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
-            </select>
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1.5">Class</label>
-            <select value={selectedClass} onChange={(e) => { setSelectedClass(e.target.value); setSelectedDivision(''); }} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
-              <option value="">All Classes</option>
-              {classes.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-            </select>
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1.5">Division</label>
-            <select value={selectedDivision} onChange={(e) => setSelectedDivision(e.target.value)} disabled={!selectedClass} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-100 disabled:text-gray-400">
-              <option value="">All Divisions</option>
-              {divisions.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
-            </select>
-          </div>
-        </div>
-      </div>
+      <FilterBar>
+        <FilterSelect label="Academic Batch" value={selectedBatch} onChange={(e) => setSelectedBatch(e.target.value)}>
+          <option value="">All Batches</option>
+          {batches.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
+        </FilterSelect>
+        <FilterSelect label="Class" value={selectedClass} onChange={(e) => { setSelectedClass(e.target.value); setSelectedDivision(''); }}>
+          <option value="">All Classes</option>
+          {classes.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+        </FilterSelect>
+        <FilterSelect label="Division" value={selectedDivision} onChange={(e) => setSelectedDivision(e.target.value)} disabled={!selectedClass}>
+          <option value="">All Divisions</option>
+          {divisions.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
+        </FilterSelect>
+      </FilterBar>
 
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-gray-200 text-left text-gray-500 bg-gray-50">
-              <th className="px-4 py-3 font-medium">Name</th>
-              <th className="px-4 py-3 font-medium">Date of Birth</th>
-              <th className="px-4 py-3 font-medium">Gender</th>
-              <th className="px-4 py-3 font-medium">Admission Date</th>
-              {canCreate && <th className="px-4 py-3 font-medium text-right">Actions</th>}
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-100">
-            {loading ? (
-              <tr><td colSpan={canCreate ? 5 : 4} className="px-4 py-6 text-center text-gray-400">Loading...</td></tr>
-            ) : students.length === 0 ? (
-              <tr><td colSpan={canCreate ? 5 : 4} className="px-4 py-6 text-center text-gray-400">No students found matching the selected filters.</td></tr>
-            ) : (
-              students.map((student) => (
-                <tr key={student.id} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-4 py-3 font-medium text-gray-900 cursor-pointer" onClick={() => navigate(`/students/${student.id}`)}>
-                    {`${student.firstName || ''} ${student.lastName || ''}`.trim()}
-                  </td>
-                  <td className="px-4 py-3 text-gray-700">{student.dateOfBirth || '—'}</td>
-                  <td className="px-4 py-3 text-gray-700">{student.gender || '—'}</td>
-                  <td className="px-4 py-3 text-gray-700">{student.admissionDate || '—'}</td>
-                  {canCreate && (
-                    <td className="px-4 py-3 text-right">
-                      <div className="flex items-center justify-end gap-1">
-                        <button onClick={() => navigate(`/students/${student.id}`)} className="p-1.5 text-gray-400 hover:text-indigo-600 transition-colors" title="View">
-                          <Eye className="w-4 h-4" />
-                        </button>
-                        <button onClick={() => handleOpenEdit(student)} className="p-1.5 text-gray-400 hover:text-blue-600 transition-colors" title="Edit">
-                          <Pencil className="w-4 h-4" />
-                        </button>
-                        {canDelete && (
-                          <button onClick={() => handleDelete(student.id)} className="p-1.5 text-gray-400 hover:text-red-500 transition-colors" title="Delete">
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        )}
-                      </div>
+      <div className="rounded-xl overflow-hidden theme-card animate-fade-in">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-bottom-divider">
+                <th className="px-4 py-3.5 text-left font-semibold theme-text-muted text-xs uppercase tracking-wider bg-sidebar-hover">Name</th>
+                <th className="px-4 py-3.5 text-left font-semibold theme-text-muted text-xs uppercase tracking-wider bg-sidebar-hover">Date of Birth</th>
+                <th className="px-4 py-3.5 text-left font-semibold theme-text-muted text-xs uppercase tracking-wider bg-sidebar-hover">Gender</th>
+                <th className="px-4 py-3.5 text-left font-semibold theme-text-muted text-xs uppercase tracking-wider bg-sidebar-hover">Admission Date</th>
+                {canCreate && <th className="px-4 py-3.5 text-right font-semibold theme-text-muted text-xs uppercase tracking-wider bg-sidebar-hover">Actions</th>}
+              </tr>
+            </thead>
+            <tbody>
+              {loading ? (
+                <tr><td colSpan={canCreate ? 5 : 4} className="px-4 py-8"><LoadingText /></td></tr>
+              ) : students.length === 0 ? (
+                <tr><td colSpan={canCreate ? 5 : 4} className="px-4 py-8 text-center theme-text-muted">No students found matching the selected filters.</td></tr>
+              ) : (
+                students.map((student) => (
+                  <tr key={student.id} className="theme-table-row border-bottom-divider">
+                    <td className="px-4 py-3.5 font-medium theme-text cursor-pointer" onClick={() => navigate(`/students/${student.id}`)}>
+                      {`${student.firstName || ''} ${student.lastName || ''}`.trim()}
                     </td>
-                  )}
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+                    <td className="px-4 py-3.5 theme-text-muted">{student.dateOfBirth || '—'}</td>
+                    <td className="px-4 py-3.5 theme-text-muted">{student.gender || '—'}</td>
+                    <td className="px-4 py-3.5 theme-text-muted">{student.admissionDate || '—'}</td>
+                    {canCreate && (
+                      <td className="px-4 py-3.5 text-right">
+                        <div className="flex items-center justify-end gap-1">
+                          <button onClick={() => navigate(`/students/${student.id}`)} className="p-1.5 rounded-lg theme-text-faint hover:theme-accent transition-colors" title="View">
+                            <Eye className="w-4 h-4" />
+                          </button>
+                          <button onClick={() => handleOpenEdit(student)} className="p-1.5 rounded-lg theme-text-faint hover:theme-accent transition-colors" title="Edit">
+                            <Pencil className="w-4 h-4" />
+                          </button>
+                          {canDelete && (
+                            <button onClick={() => handleDelete(student.id)} className="p-1.5 rounded-lg theme-text-faint hover-danger transition-colors" title="Delete">
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    )}
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       <Modal open={showModal} onClose={() => setShowModal(false)} title={editingId ? 'Edit Student' : 'Add Student'}>
         <form onSubmit={handleSave} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">First Name</label>
-              <input type="text" required value={form.firstName} onChange={(e) => setForm({ ...form, firstName: e.target.value })} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">Last Name</label>
-              <input type="text" value={form.lastName} onChange={(e) => setForm({ ...form, lastName: e.target.value })} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
-            </div>
+            <FormField label="First Name">
+              <input type="text" required value={form.firstName} onChange={(e) => setForm({ ...form, firstName: e.target.value })} className="w-full rounded-lg px-3 py-2 text-sm theme-input" />
+            </FormField>
+            <FormField label="Last Name">
+              <input type="text" value={form.lastName} onChange={(e) => setForm({ ...form, lastName: e.target.value })} className="w-full rounded-lg px-3 py-2 text-sm theme-input" />
+            </FormField>
           </div>
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">Date of Birth</label>
-              <input type="date" value={form.dateOfBirth} onChange={(e) => setForm({ ...form, dateOfBirth: e.target.value })} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">Gender</label>
-              <select value={form.gender} onChange={(e) => setForm({ ...form, gender: e.target.value })} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            <FormField label="Date of Birth">
+              <input type="date" value={form.dateOfBirth} onChange={(e) => setForm({ ...form, dateOfBirth: e.target.value })} className="w-full rounded-lg px-3 py-2 text-sm theme-input" />
+            </FormField>
+            <FormField label="Gender">
+              <select value={form.gender} onChange={(e) => setForm({ ...form, gender: e.target.value })} className="w-full rounded-lg px-3 py-2 text-sm theme-input cursor-pointer">
                 <option value="">Select</option>
                 <option value="MALE">Male</option>
                 <option value="FEMALE">Female</option>
                 <option value="OTHER">Other</option>
               </select>
-            </div>
+            </FormField>
           </div>
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">Admission Date</label>
-              <input type="date" value={form.admissionDate} onChange={(e) => setForm({ ...form, admissionDate: e.target.value })} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">Parent Email</label>
-              <input type="email" value={form.parentEmail} onChange={(e) => setForm({ ...form, parentEmail: e.target.value })} placeholder="parent@example.com" className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
-            </div>
+            <FormField label="Admission Date">
+              <input type="date" value={form.admissionDate} onChange={(e) => setForm({ ...form, admissionDate: e.target.value })} className="w-full rounded-lg px-3 py-2 text-sm theme-input" />
+            </FormField>
+            <FormField label="Parent Email">
+              <input type="email" value={form.parentEmail} onChange={(e) => setForm({ ...form, parentEmail: e.target.value })} placeholder="parent@example.com" className="w-full rounded-lg px-3 py-2 text-sm theme-input" />
+            </FormField>
           </div>
-          <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1">Avatar URL</label>
-            <input type="text" value={form.avatarUrl} onChange={(e) => setForm({ ...form, avatarUrl: e.target.value })} placeholder="https://..." className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
-          </div>
-          <div className="flex gap-2 pt-2">
-            <button type="submit" disabled={saving} className="px-4 py-2 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50">
-              {saving ? 'Saving...' : editingId ? 'Update' : 'Create'}
-            </button>
-            <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 bg-gray-200 text-gray-700 text-sm rounded-lg hover:bg-gray-300 transition-colors">
-              Cancel
-            </button>
-          </div>
+          <FormField label="Avatar URL">
+            <input type="text" value={form.avatarUrl} onChange={(e) => setForm({ ...form, avatarUrl: e.target.value })} placeholder="https://..." className="w-full rounded-lg px-3 py-2 text-sm theme-input" />
+          </FormField>
+          <FormActions onSubmit={handleSave} onCancel={() => setShowModal(false)} submitLabel={editingId ? 'Update' : 'Create'} submitting={saving} />
         </form>
       </Modal>
     </div>

@@ -4,6 +4,8 @@ import { useAuth } from '../context/AuthContext';
 import { academicApi } from '../api/academic';
 import { courseworkApi } from '../api/coursework';
 import { Calendar, Plus, Trash2, Send, DoorOpen, Clock } from 'lucide-react';
+import Modal from '../components/Modal';
+import { FormField, FormActions, FilterBar, FilterSelect } from '../components/ui';
 
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 const SLOT_TYPES = ['LECTURE', 'LAB', 'FREE', 'BREAK', 'ASSEMBLY'];
@@ -193,16 +195,14 @@ export default function TimetableBuilder() {
           <div className="flex gap-2">
             <button
               onClick={() => setShowRoomModal(true)}
-              className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors"
-              style={{ background: 'var(--accent-primary)', color: '#fff' }}
+              className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors btn-accent"
             >
               <DoorOpen className="w-4 h-4" /> Add Room
             </button>
             <button
               onClick={() => setShowTimetableModal(true)}
               disabled={!selectedBatch || !selectedClass}
-              className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
-              style={{ background: 'var(--accent-secondary)', color: '#fff' }}
+              className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 btn-accent-secondary"
             >
               <Plus className="w-4 h-4" /> New Timetable
             </button>
@@ -211,93 +211,69 @@ export default function TimetableBuilder() {
       />
 
       {/* Filters */}
-      <div className="theme-card rounded-xl p-4 mb-6">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div>
-            <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-muted)' }}>Batch</label>
+      <FilterBar>
+        <FilterSelect label="Batch" value={selectedBatch} onChange={(e) => setSelectedBatch(e.target.value)}>
+          <option value="">Select batch</option>
+          {batches.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
+        </FilterSelect>
+        <FilterSelect label="Class" value={selectedClass} onChange={(e) => setSelectedClass(e.target.value)}>
+          <option value="">Select class</option>
+          {classes.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+        </FilterSelect>
+        <FilterSelect label="Division" value={selectedDivision} onChange={(e) => setSelectedDivision(e.target.value)}>
+          <option value="">Select division</option>
+          {divisions.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
+        </FilterSelect>
+        <div>
+          <label className="block text-xs font-medium theme-text-muted mb-1.5">Timetable</label>
+          <div className="flex gap-2">
             <select
-              value={selectedBatch}
-              onChange={(e) => setSelectedBatch(e.target.value)}
+              value={selectedTimetable}
+              onChange={(e) => setSelectedTimetable(e.target.value)}
               className="theme-input w-full rounded-lg px-3 py-2 text-sm"
             >
-              <option value="">Select batch</option>
-              {batches.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
+              <option value="">Select timetable</option>
+              {timetables.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.name} {t.isPublished ? '(Published)' : '(Draft)'}
+                </option>
+              ))}
             </select>
-          </div>
-          <div>
-            <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-muted)' }}>Class</label>
-            <select
-              value={selectedClass}
-              onChange={(e) => setSelectedClass(e.target.value)}
-              className="theme-input w-full rounded-lg px-3 py-2 text-sm"
-            >
-              <option value="">Select class</option>
-              {classes.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-            </select>
-          </div>
-          <div>
-            <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-muted)' }}>Division</label>
-            <select
-              value={selectedDivision}
-              onChange={(e) => setSelectedDivision(e.target.value)}
-              className="theme-input w-full rounded-lg px-3 py-2 text-sm"
-            >
-              <option value="">Select division</option>
-              {divisions.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
-            </select>
-          </div>
-          <div>
-            <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-muted)' }}>Timetable</label>
-            <div className="flex gap-2">
-              <select
-                value={selectedTimetable}
-                onChange={(e) => setSelectedTimetable(e.target.value)}
-                className="theme-input w-full rounded-lg px-3 py-2 text-sm"
+            {canEdit && selectedTimetableObj && !selectedTimetableObj.isPublished && (
+              <button
+                onClick={handlePublish}
+                className="px-3 py-2 rounded-lg text-sm font-medium shrink-0 btn-accent"
+                title="Publish timetable"
               >
-                <option value="">Select timetable</option>
-                {timetables.map((t) => (
-                  <option key={t.id} value={t.id}>
-                    {t.name} {t.isPublished ? '(Published)' : '(Draft)'}
-                  </option>
-                ))}
-              </select>
-              {canEdit && selectedTimetableObj && !selectedTimetableObj.isPublished && (
-                <button
-                  onClick={handlePublish}
-                  className="px-3 py-2 rounded-lg text-sm font-medium shrink-0"
-                  style={{ background: 'var(--accent-primary)', color: '#fff' }}
-                  title="Publish timetable"
-                >
                   <Send className="w-4 h-4" />
                 </button>
               )}
             </div>
           </div>
-        </div>
-      </div>
+      </FilterBar>
 
       {/* Timetable Grid */}
       {selectedTimetable ? (
         <div className="theme-card rounded-xl p-4 overflow-x-auto">
           {loading ? (
-            <div className="text-center py-12" style={{ color: 'var(--text-muted)' }}>
+            <div className="text-center py-12 text-muted-c">
               <Clock className="w-8 h-8 mx-auto mb-2 animate-spin" />
               Loading slots...
             </div>
           ) : (
-            <table className="w-full border-collapse" style={{ minWidth: '700px' }}>
+            <table className="w-full border-collapse min-w-700">
               <thead>
                 <tr>
-                  <th className="p-2 text-left text-xs font-semibold" style={{ color: 'var(--text-muted)', borderBottom: '1px solid var(--input-border)' }}>Period</th>
+                  <th className="p-2 text-left text-xs font-semibold th-header">Period</th>
                   {DAYS.map((day) => (
-                    <th key={day} className="p-2 text-center text-xs font-semibold" style={{ color: 'var(--text-muted)', borderBottom: '1px solid var(--input-border)' }}>{day}</th>
+                    <th key={day} className="p-2 text-center text-xs font-semibold th-header">{day}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {Array.from({ length: periodCount }, (_, i) => i + 1).map((period) => (
                   <tr key={period}>
-                    <td className="p-2 text-sm font-semibold" style={{ color: 'var(--text-main)' }}>P{period}</td>
+                    <td className="p-2 text-sm font-semibold text-main">P{period}</td>
                     {DAYS.map((_, dayIdx) => {
                       const slot = slotGrid[`${dayIdx}-${period}`];
                       return (
@@ -313,25 +289,25 @@ export default function TimetableBuilder() {
                               onClick={() => canEdit && openSlotEditor(dayIdx, period)}
                             >
                               {slot.slotType === 'FREE' ? (
-                                <span style={{ color: 'var(--text-muted)' }}>Free</span>
+                                <span className="text-muted-c">Free</span>
                               ) : slot.slotType === 'BREAK' ? (
-                                <span style={{ color: 'var(--text-muted)' }}>Break</span>
+                                <span className="text-muted-c">Break</span>
                               ) : slot.slotType === 'ASSEMBLY' ? (
-                                <span style={{ color: 'var(--text-main)' }}>Assembly</span>
+                                <span className="text-main">Assembly</span>
                               ) : (
                                 <>
-                                  <div className="font-semibold" style={{ color: 'var(--text-main)' }}>
+                                  <div className="font-semibold text-main">
                                     {subjectMap[slot.subjectId]?.name || '—'}
                                   </div>
-                                  <div style={{ color: 'var(--text-muted)' }}>
+                                  <div className="text-muted-c">
                                     {slot.startTime}–{slot.endTime}
                                   </div>
                                   {slot.roomId && (
-                                    <div style={{ color: 'var(--text-muted)' }}>
+                                    <div className="text-muted-c">
                                       {roomMap[slot.roomId]?.name || ''}
                                     </div>
                                   )}
-                                  <div className="text-[10px] mt-1" style={{ color: 'var(--accent-primary)' }}>
+                                  <div className="text-[10px] mt-1 text-accent-c">
                                     {slot.slotType}
                                   </div>
                                 </>
@@ -339,8 +315,7 @@ export default function TimetableBuilder() {
                               {canEdit && (
                                 <button
                                   onClick={(e) => { e.stopPropagation(); handleDeleteSlot(slot.id); }}
-                                  className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                                  style={{ color: 'var(--accent-secondary)' }}
+                                  className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity text-accent-secondary"
                                 >
                                   <Trash2 className="w-3 h-3" />
                                 </button>
@@ -360,7 +335,7 @@ export default function TimetableBuilder() {
                                 <Plus className="w-4 h-4" />
                               </button>
                             ) : (
-                              <div className="rounded-lg" style={{ border: '1px solid var(--input-border)', minHeight: '60px' }} />
+                              <div className="rounded-lg border-input" style={{ minHeight: '60px' }} />
                             )
                           )}
                         </td>
@@ -374,8 +349,8 @@ export default function TimetableBuilder() {
         </div>
       ) : (
         <div className="theme-card rounded-xl p-12 text-center">
-          <Calendar className="w-12 h-12 mx-auto mb-3" style={{ color: 'var(--text-muted)' }} />
-          <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+          <Calendar className="w-12 h-12 mx-auto mb-3 text-muted-c" />
+          <p className="text-sm text-muted-c">
             Select a batch, class, and timetable to view or edit the schedule.
           </p>
         </div>
@@ -384,12 +359,12 @@ export default function TimetableBuilder() {
       {/* Rooms list */}
       {rooms.length > 0 && (
         <div className="theme-card rounded-xl p-4 mt-6">
-          <h3 className="text-sm font-semibold mb-3" style={{ color: 'var(--text-main)' }}>Rooms</h3>
+          <h3 className="text-sm font-semibold mb-3 text-main">Rooms</h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {rooms.map((r) => (
-              <div key={r.id} className="rounded-lg p-3 text-sm" style={{ border: '1px solid var(--input-border)' }}>
-                <div className="font-medium" style={{ color: 'var(--text-main)' }}>{r.name}</div>
-                <div className="text-xs" style={{ color: 'var(--text-muted)' }}>{r.roomType} · Cap: {r.capacity || '—'}</div>
+              <div key={r.id} className="rounded-lg p-3 text-sm border-input">
+                <div className="font-medium text-main">{r.name}</div>
+                <div className="text-xs text-muted-c">{r.roomType} · Cap: {r.capacity || '—'}</div>
               </div>
             ))}
           </div>
@@ -397,120 +372,72 @@ export default function TimetableBuilder() {
       )}
 
       {/* Slot Editor Modal */}
-      {showSlotModal && editingSlot && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setShowSlotModal(false)}>
-          <div className="theme-card rounded-xl p-6 w-full max-w-md" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-lg font-semibold mb-4" style={{ color: 'var(--text-main)' }}>
-              {editingSlot.existing ? 'Edit Slot' : 'Add Slot'} — {DAYS[editingSlot.day]} P{editingSlot.period}
-            </h3>
-            <form onSubmit={handleSaveSlot} className="space-y-3">
-              <div>
-                <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-muted)' }}>Subject</label>
-                <select name="subjectId" defaultValue={editingSlot.existing?.subjectId || ''} className="theme-input w-full rounded-lg px-3 py-2 text-sm">
-                  <option value="">— None —</option>
-                  {subjects.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-muted)' }}>Faculty ID</label>
-                <input name="facultyId" type="number" defaultValue={editingSlot.existing?.facultyId || ''} className="theme-input w-full rounded-lg px-3 py-2 text-sm" placeholder="Faculty user ID" />
-              </div>
-              <div>
-                <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-muted)' }}>Room</label>
-                <select name="roomId" defaultValue={editingSlot.existing?.roomId || ''} className="theme-input w-full rounded-lg px-3 py-2 text-sm">
-                  <option value="">— None —</option>
-                  {rooms.map((r) => <option key={r.id} value={r.id}>{r.name} ({r.roomType})</option>)}
-                </select>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-muted)' }}>Start Time</label>
-                  <input name="startTime" type="time" defaultValue={editingSlot.existing?.startTime || '09:00'} className="theme-input w-full rounded-lg px-3 py-2 text-sm" required />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-muted)' }}>End Time</label>
-                  <input name="endTime" type="time" defaultValue={editingSlot.existing?.endTime || '09:45'} className="theme-input w-full rounded-lg px-3 py-2 text-sm" required />
-                </div>
-              </div>
-              <div>
-                <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-muted)' }}>Slot Type</label>
-                <select name="slotType" defaultValue={editingSlot.existing?.slotType || 'LECTURE'} className="theme-input w-full rounded-lg px-3 py-2 text-sm">
-                  {SLOT_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
-                </select>
-              </div>
-              <div className="flex gap-2 pt-2">
-                <button type="submit" className="flex-1 px-4 py-2 rounded-lg text-sm font-medium" style={{ background: 'var(--accent-primary)', color: '#fff' }}>
-                  Save Slot
-                </button>
-                <button type="button" onClick={() => setShowSlotModal(false)} className="px-4 py-2 rounded-lg text-sm font-medium" style={{ border: '1px solid var(--input-border)', color: 'var(--text-main)' }}>
-                  Cancel
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      <Modal open={showSlotModal && !!editingSlot} onClose={() => setShowSlotModal(false)} title={editingSlot ? `${editingSlot.existing ? 'Edit Slot' : 'Add Slot'} — ${DAYS[editingSlot.day]} P${editingSlot.period}` : ''} maxWidth="max-w-md">
+        {editingSlot && (
+          <form onSubmit={handleSaveSlot} className="space-y-3">
+            <FormField label="Subject">
+              <select name="subjectId" defaultValue={editingSlot.existing?.subjectId || ''} className="theme-input w-full rounded-lg px-3 py-2 text-sm">
+                <option value="">— None —</option>
+                {subjects.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+              </select>
+            </FormField>
+            <FormField label="Faculty ID">
+              <input name="facultyId" type="number" defaultValue={editingSlot.existing?.facultyId || ''} className="theme-input w-full rounded-lg px-3 py-2 text-sm" placeholder="Faculty user ID" />
+            </FormField>
+            <FormField label="Room">
+              <select name="roomId" defaultValue={editingSlot.existing?.roomId || ''} className="theme-input w-full rounded-lg px-3 py-2 text-sm">
+                <option value="">— None —</option>
+                {rooms.map((r) => <option key={r.id} value={r.id}>{r.name} ({r.roomType})</option>)}
+              </select>
+            </FormField>
+            <div className="grid grid-cols-2 gap-3">
+              <FormField label="Start Time">
+                <input name="startTime" type="time" defaultValue={editingSlot.existing?.startTime || '09:00'} className="theme-input w-full rounded-lg px-3 py-2 text-sm" required />
+              </FormField>
+              <FormField label="End Time">
+                <input name="endTime" type="time" defaultValue={editingSlot.existing?.endTime || '09:45'} className="theme-input w-full rounded-lg px-3 py-2 text-sm" required />
+              </FormField>
+            </div>
+            <FormField label="Slot Type">
+              <select name="slotType" defaultValue={editingSlot.existing?.slotType || 'LECTURE'} className="theme-input w-full rounded-lg px-3 py-2 text-sm">
+                {SLOT_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
+              </select>
+            </FormField>
+            <FormActions onSubmit={handleSaveSlot} onCancel={() => setShowSlotModal(false)} submitLabel="Save Slot" submitting={false} />
+          </form>
+        )}
+      </Modal>
 
       {/* New Timetable Modal */}
-      {showTimetableModal && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setShowTimetableModal(false)}>
-          <div className="theme-card rounded-xl p-6 w-full max-w-md" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-lg font-semibold mb-4" style={{ color: 'var(--text-main)' }}>Create Timetable</h3>
-            <form onSubmit={handleCreateTimetable} className="space-y-3">
-              <div>
-                <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-muted)' }}>Timetable Name</label>
-                <input name="name" type="text" required placeholder="e.g., Class 10 Master Schedule" className="theme-input w-full rounded-lg px-3 py-2 text-sm" />
-              </div>
-              <div>
-                <label className="flex items-center gap-2 text-sm" style={{ color: 'var(--text-main)' }}>
-                  <input name="isShared" type="checkbox" /> Shared across divisions
-                </label>
-              </div>
-              <div className="flex gap-2 pt-2">
-                <button type="submit" className="flex-1 px-4 py-2 rounded-lg text-sm font-medium" style={{ background: 'var(--accent-secondary)', color: '#fff' }}>
-                  Create
-                </button>
-                <button type="button" onClick={() => setShowTimetableModal(false)} className="px-4 py-2 rounded-lg text-sm font-medium" style={{ border: '1px solid var(--input-border)', color: 'var(--text-main)' }}>
-                  Cancel
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      <Modal open={showTimetableModal} onClose={() => setShowTimetableModal(false)} title="Create Timetable" maxWidth="max-w-md">
+        <form onSubmit={handleCreateTimetable} className="space-y-3">
+          <FormField label="Timetable Name">
+            <input name="name" type="text" required placeholder="e.g., Class 10 Master Schedule" className="theme-input w-full rounded-lg px-3 py-2 text-sm" />
+          </FormField>
+          <label className="flex items-center gap-2 text-sm text-main">
+            <input name="isShared" type="checkbox" /> Shared across divisions
+          </label>
+          <FormActions onSubmit={handleCreateTimetable} onCancel={() => setShowTimetableModal(false)} submitLabel="Create" submitting={false} submitVariant="secondary" />
+        </form>
+      </Modal>
 
       {/* Room Modal */}
-      {showRoomModal && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setShowRoomModal(false)}>
-          <div className="theme-card rounded-xl p-6 w-full max-w-md" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-lg font-semibold mb-4" style={{ color: 'var(--text-main)' }}>Add Room</h3>
-            <form onSubmit={handleCreateRoom} className="space-y-3">
-              <div>
-                <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-muted)' }}>Room Name</label>
-                <input name="name" type="text" required placeholder="e.g., Room 201" className="theme-input w-full rounded-lg px-3 py-2 text-sm" />
-              </div>
-              <div>
-                <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-muted)' }}>Room Type</label>
-                <select name="roomType" defaultValue="CLASSROOM" className="theme-input w-full rounded-lg px-3 py-2 text-sm">
-                  {ROOM_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs font-medium mb-1" style={{ color: 'var(--text-muted)' }}>Capacity</label>
-                <input name="capacity" type="number" placeholder="e.g., 40" className="theme-input w-full rounded-lg px-3 py-2 text-sm" />
-              </div>
-              <div className="flex gap-2 pt-2">
-                <button type="submit" className="flex-1 px-4 py-2 rounded-lg text-sm font-medium" style={{ background: 'var(--accent-primary)', color: '#fff' }}>
-                  Add Room
-                </button>
-                <button type="button" onClick={() => setShowRoomModal(false)} className="px-4 py-2 rounded-lg text-sm font-medium" style={{ border: '1px solid var(--input-border)', color: 'var(--text-main)' }}>
-                  Cancel
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      <Modal open={showRoomModal} onClose={() => setShowRoomModal(false)} title="Add Room" maxWidth="max-w-md">
+        <form onSubmit={handleCreateRoom} className="space-y-3">
+          <FormField label="Room Name">
+            <input name="name" type="text" required placeholder="e.g., Room 201" className="theme-input w-full rounded-lg px-3 py-2 text-sm" />
+          </FormField>
+          <FormField label="Room Type">
+            <select name="roomType" defaultValue="CLASSROOM" className="theme-input w-full rounded-lg px-3 py-2 text-sm">
+              {ROOM_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
+            </select>
+          </FormField>
+          <FormField label="Capacity">
+            <input name="capacity" type="number" placeholder="e.g., 40" className="theme-input w-full rounded-lg px-3 py-2 text-sm" />
+          </FormField>
+          <FormActions onSubmit={handleCreateRoom} onCancel={() => setShowRoomModal(false)} submitLabel="Add Room" submitting={false} />
+        </form>
+      </Modal>
     </div>
   );
 }

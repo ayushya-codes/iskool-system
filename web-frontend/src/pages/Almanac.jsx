@@ -96,7 +96,7 @@ export default function Almanac() {
       {/* Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
         <div className="rounded-xl p-4 flex items-center gap-3 theme-card">
-          <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center shrink-0">
+          <div className="w-10 h-10 [color-mix(in_srgb,var(--info)_10%,transparent)]0 rounded-lg flex items-center justify-center shrink-0">
             <MessageSquare className="w-5 h-5 text-white" />
           </div>
           <div>
@@ -105,7 +105,7 @@ export default function Almanac() {
           </div>
         </div>
         <div className="rounded-xl p-4 flex items-center gap-3 theme-card">
-          <div className="w-10 h-10 bg-purple-500 rounded-lg flex items-center justify-center shrink-0">
+          <div className="w-10 h-10 [color-mix(in_srgb,var(--accent-secondary)_10%,transparent)]0 rounded-lg flex items-center justify-center shrink-0">
             <BookOpen className="w-5 h-5 text-white" />
           </div>
           <div>
@@ -114,7 +114,7 @@ export default function Almanac() {
           </div>
         </div>
         <div className="rounded-xl p-4 flex items-center gap-3 theme-card">
-          <div className="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center shrink-0">
+          <div className="w-10 h-10 [color-mix(in_srgb,var(--success)_10%,transparent)]0 rounded-lg flex items-center justify-center shrink-0">
             <BookMarked className="w-5 h-5 text-white" />
           </div>
           <div>
@@ -180,7 +180,7 @@ export default function Almanac() {
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold theme-text">Remarks</h2>
           {canAddRemark && selectedStudent && (
-            <button onClick={() => setShowRemarkModal(true)} className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 transition-colors">
+            <button onClick={() => setShowRemarkModal(true)} className="inline-flex items-center gap-2 rounded-lg gradient-bg px-4 py-2 text-sm font-semibold text-white gradient-bg-hover transition-colors">
               <Plus className="w-4 h-4" /> Add Remark
             </button>
           )}
@@ -192,7 +192,7 @@ export default function Almanac() {
         ) : (
           <div className="space-y-3">
             {remarks.map((r) => (
-              <div key={r.id} className="p-4 rounded-lg" style={{ border: '1px solid color-mix(in srgb, var(--text-muted) 15%, transparent)' }}>
+              <div key={r.id} className="p-4 rounded-lg border-muted-faint">
                 <div className="flex items-center justify-between mb-1">
                   <span className="text-sm font-medium theme-text">{r.remarkType || 'General'}</span>
                   <span className="text-xs theme-text-muted">{r.remarkDate || r.createdAt}</span>
@@ -212,7 +212,7 @@ export default function Almanac() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {prayers.map((p) => (
-              <div key={p.id} className="p-4 rounded-lg" style={{ border: '1px solid color-mix(in srgb, var(--text-muted) 15%, transparent)' }}>
+              <div key={p.id} className="p-4 rounded-lg border-muted-faint">
                 <p className="text-sm font-medium theme-text mb-1">{p.title || 'Prayer'}</p>
                 <p className="text-xs theme-text-muted line-clamp-2">{p.textContent || p.text || p.content}</p>
               </div>
@@ -223,11 +223,11 @@ export default function Almanac() {
 
       <Modal open={showRemarkModal} onClose={() => setShowRemarkModal(false)} title="Add Remark">
         <form onSubmit={handleAddRemark} className="space-y-4">
-          <div><label className="block text-xs font-medium text-gray-500 mb-1">Remark</label><textarea required value={remarkForm.remark} onChange={(e) => setRemarkForm({ ...remarkForm, remark: e.target.value })} rows={3} placeholder="Enter remark for the student" className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" /></div>
-          <div><label className="block text-xs font-medium text-gray-500 mb-1">Date</label><input type="date" required value={remarkForm.remarkDate} onChange={(e) => setRemarkForm({ ...remarkForm, remarkDate: e.target.value })} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" /></div>
+          <div><label className="block text-xs font-medium theme-text-muted mb-1">Remark</label><textarea required value={remarkForm.remark} onChange={(e) => setRemarkForm({ ...remarkForm, remark: e.target.value })} rows={3} placeholder="Enter remark for the student" className="w-full rounded-lg theme-input px-3 py-2 text-sm focus-ring" /></div>
+          <div><label className="block text-xs font-medium theme-text-muted mb-1">Date</label><input type="date" required value={remarkForm.remarkDate} onChange={(e) => setRemarkForm({ ...remarkForm, remarkDate: e.target.value })} className="w-full rounded-lg theme-input px-3 py-2 text-sm focus-ring" /></div>
           <div className="flex gap-2 pt-2">
-            <button type="submit" disabled={saving} className="px-4 py-2 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50">{saving ? 'Saving...' : 'Save'}</button>
-            <button type="button" onClick={() => setShowRemarkModal(false)} className="px-4 py-2 bg-gray-200 text-gray-700 text-sm rounded-lg hover:bg-gray-300 transition-colors">Cancel</button>
+            <button type="submit" disabled={saving} className="px-4 py-2 gradient-bg text-white text-sm rounded-lg gradient-bg-hover transition-colors disabled:opacity-50">{saving ? 'Saving...' : 'Save'}</button>
+            <button type="button" onClick={() => setShowRemarkModal(false)} className="px-4 py-2 [var(--sidebar-hover-bg)] theme-text text-sm rounded-lg hover:bg-[var(--sidebar-hover-bg)] transition-colors">Cancel</button>
           </div>
         </form>
       </Modal>

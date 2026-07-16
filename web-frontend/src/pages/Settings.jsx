@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { customizationApi } from '../api/customization';
 import PageHeader from '../components/PageHeader';
 import { Palette, Type, Globe, ToggleLeft, Upload, Tag, Trash2, Plus } from 'lucide-react';
+import { Tabs, LoadingText } from '../components/ui';
 
 export default function Settings() {
   const [tab, setTab] = useState('theme');
@@ -66,7 +67,7 @@ export default function Settings() {
     return (
       <div>
         <PageHeader title="School Settings" subtitle="Customize your school's appearance and behavior" />
-        <div className="bg-white rounded-xl border border-gray-200 p-8 text-center text-gray-400">Loading...</div>
+        <div className="rounded-xl theme-card p-12 text-center theme-text-muted flex items-center justify-center gap-2"><LoadingText /></div>
       </div>
     );
   }
@@ -78,49 +79,36 @@ export default function Settings() {
       <div className="flex flex-col lg:flex-row gap-6">
         {/* Tabs */}
         <div className="lg:w-56 shrink-0">
-          <div className="bg-white rounded-xl border border-gray-200 p-2 flex lg:flex-col gap-1 overflow-x-auto">
-            {tabs.map(({ key, label, icon: Icon }) => (
-              <button
-                key={key}
-                onClick={() => setTab(key)}
-                className={`flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
-                  tab === key ? 'bg-indigo-600 text-white' : 'text-gray-600 hover:bg-gray-50'
-                }`}
-              >
-                <Icon className="w-4 h-4 shrink-0" />
-                {label}
-              </button>
-            ))}
-          </div>
+          <Tabs tabs={tabs} activeTab={tab} onChange={setTab} layout="sidebar" />
         </div>
 
         {/* Tab content */}
         <div className="flex-1 min-w-0">
           {tab === 'theme' && (
-            <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
-              <h2 className="text-lg font-semibold text-gray-900">Theme & Colors</h2>
+            <div className="rounded-xl theme-card p-6 space-y-4 animate-fade-in">
+              <h2 className="text-lg font-semibold theme-text">Theme & Colors</h2>
               {[
                 { key: 'accentColor', label: 'Accent Color' },
                 { key: 'backgroundColor', label: 'Background Color' },
                 { key: 'sidebarColor', label: 'Sidebar Color' },
               ].map(({ key, label }) => (
                 <div key={key} className="flex items-center justify-between">
-                  <label className="text-sm font-medium text-gray-700">{label}</label>
+                  <label className="text-sm font-medium theme-text">{label}</label>
                   <input
                     type="color"
                     defaultValue={cust?.[key] || '#4f46e5'}
                     onBlur={(e) => saveCustomization({ [key]: e.target.value })}
-                    className="w-12 h-9 rounded border border-gray-300 cursor-pointer"
+                    className="w-12 h-9 rounded-lg cursor-pointer theme-input"
                   />
                 </div>
               ))}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">CSS Overrides</label>
+                <label className="block text-sm font-medium theme-text mb-1">CSS Overrides</label>
                 <textarea
                   defaultValue={cust?.cssOverrides || ''}
                   onBlur={(e) => saveCustomization({ cssOverrides: e.target.value })}
                   rows={5}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full rounded-lg px-3 py-2 text-sm font-mono theme-input"
                   placeholder="/* Custom CSS here */"
                 />
               </div>
@@ -128,8 +116,8 @@ export default function Settings() {
           )}
 
           {tab === 'fonts' && (
-            <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
-              <h2 className="text-lg font-semibold text-gray-900">Fonts & Locale</h2>
+            <div className="rounded-xl theme-card p-6 space-y-4 animate-fade-in">
+              <h2 className="text-lg font-semibold theme-text">Fonts & Locale</h2>
               {[
                 { key: 'fontFamily', label: 'Body Font Family', placeholder: 'Inter, sans-serif' },
                 { key: 'headingFontFamily', label: 'Heading Font Family', placeholder: 'Inter, sans-serif' },
@@ -138,13 +126,13 @@ export default function Settings() {
                 { key: 'locale', label: 'Locale', placeholder: 'en' },
               ].map(({ key, label, placeholder }) => (
                 <div key={key}>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
+                  <label className="block text-sm font-medium theme-text mb-1">{label}</label>
                   <input
                     type="text"
                     defaultValue={cust?.[key] || ''}
                     onBlur={(e) => saveCustomization({ [key]: e.target.value })}
                     placeholder={placeholder}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full rounded-lg px-3 py-2 text-sm theme-input"
                   />
                 </div>
               ))}
@@ -152,9 +140,9 @@ export default function Settings() {
           )}
 
           {tab === 'modules' && (
-            <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-3">
-              <h2 className="text-lg font-semibold text-gray-900">Module Toggles</h2>
-              <p className="text-sm text-gray-500 mb-4">Enable or disable modules for your school.</p>
+            <div className="rounded-xl theme-card p-6 space-y-3 animate-fade-in">
+              <h2 className="text-lg font-semibold theme-text">Module Toggles</h2>
+              <p className="text-sm theme-text-muted mb-4">Enable or disable modules for your school.</p>
               {[
                 { key: 'enableFinance', label: 'Finance' },
                 { key: 'enableHelpdesk', label: 'Helpdesk' },
@@ -163,13 +151,13 @@ export default function Settings() {
                 { key: 'enableCommunication', label: 'Communication' },
                 { key: 'enableSafety', label: 'Safety' },
               ].map(({ key, label }) => (
-                <label key={key} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
-                  <span className="text-sm font-medium text-gray-700">{label}</span>
+                <label key={key} className="flex items-center justify-between py-2 theme-divider last:border-0">
+                  <span className="text-sm font-medium theme-text">{label}</span>
                   <input
                     type="checkbox"
                     defaultChecked={cust?.[key] ?? true}
                     onChange={(e) => saveCustomization({ [key]: e.target.checked })}
-                    className="w-5 h-5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                    className="w-5 h-5 rounded cursor-pointer accent-color"
                   />
                 </label>
               ))}
@@ -177,54 +165,56 @@ export default function Settings() {
           )}
 
           {tab === 'labels' && (
-            <div className="bg-white rounded-xl border border-gray-200 p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Custom Labels</h2>
-              <p className="text-sm text-gray-500 mb-4">Override default labels with your own terminology.</p>
+            <div className="rounded-xl theme-card p-6 animate-fade-in">
+              <h2 className="text-lg font-semibold theme-text mb-4">Custom Labels</h2>
+              <p className="text-sm theme-text-muted mb-4">Override default labels with your own terminology.</p>
               <div className="flex gap-2 mb-4">
                 <input
                   type="text"
                   placeholder="Key (e.g. student)"
                   value={newLabel.labelKey}
                   onChange={(e) => setNewLabel({ ...newLabel, labelKey: e.target.value })}
-                  className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="flex-1 rounded-lg px-3 py-2 text-sm theme-input"
                 />
                 <input
                   type="text"
                   placeholder="Value (e.g. Learner)"
                   value={newLabel.labelValue}
                   onChange={(e) => setNewLabel({ ...newLabel, labelValue: e.target.value })}
-                  className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="flex-1 rounded-lg px-3 py-2 text-sm theme-input"
                 />
                 <select
                   value={newLabel.language}
                   onChange={(e) => setNewLabel({ ...newLabel, language: e.target.value })}
-                  className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="rounded-lg px-3 py-2 text-sm theme-input cursor-pointer"
                 >
                   <option value="en">EN</option>
                   <option value="hi">HI</option>
                 </select>
                 <button
                   onClick={addLabel}
-                  className="inline-flex items-center gap-1 rounded-lg bg-indigo-600 px-3 py-2 text-sm font-semibold text-white hover:bg-indigo-700"
+                  className="inline-flex items-center gap-1 rounded-lg gradient-bg-hover px-3 py-2 text-sm font-semibold text-white transition-all duration-300 hover:scale-[1.02] shadow-glow"
                 >
                   <Plus className="w-4 h-4" />
                 </button>
               </div>
-              <div className="divide-y divide-gray-100">
+              <div className="divide-y theme-divider">
                 {labels.length === 0 ? (
-                  <p className="text-sm text-gray-400 py-4 text-center">No custom labels yet.</p>
+                  <p className="text-sm theme-text-muted py-4 text-center">No custom labels yet.</p>
                 ) : (
                   labels.map((l) => (
                     <div key={l.id} className="flex items-center justify-between py-3">
                       <div className="flex items-center gap-3">
-                        <span className="text-sm font-mono text-gray-500">{l.labelKey}</span>
-                        <span className="text-gray-300">→</span>
-                        <span className="text-sm font-medium text-gray-900">{l.labelValue}</span>
-                        <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded">{l.language}</span>
+                        <span className="text-sm font-mono theme-text-muted">{l.labelKey}</span>
+                        <span className="theme-text-faint">→</span>
+                        <span className="text-sm font-medium theme-text">{l.labelValue}</span>
+                        <span className="theme-badge">{l.language}</span>
                       </div>
                       <button
                         onClick={() => deleteLabel(l.id)}
-                        className="text-gray-400 hover:text-red-500 transition-colors"
+                        className="theme-text-faint hover:opacity-70 transition-opacity"
+                        onMouseEnter={(e) => e.currentTarget.style.color = 'var(--danger)'}
+                        onMouseLeave={(e) => e.currentTarget.style.color = ''}
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -236,16 +226,16 @@ export default function Settings() {
           )}
 
           {tab === 'assets' && (
-            <div className="bg-white rounded-xl border border-gray-200 p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Asset Upload</h2>
-              <p className="text-sm text-gray-500 mb-4">Upload logos, favicons, banners, and other assets to S3.</p>
+            <div className="rounded-xl theme-card p-6 animate-fade-in">
+              <h2 className="text-lg font-semibold theme-text mb-4">Asset Upload</h2>
+              <p className="text-sm theme-text-muted mb-4">Upload logos, favicons, banners, and other assets to S3.</p>
               <AssetUpload />
             </div>
           )}
         </div>
       </div>
       {saving && (
-        <div className="fixed bottom-4 right-4 bg-indigo-600 text-white text-sm px-4 py-2 rounded-lg shadow-lg">
+        <div className="fixed bottom-4 right-4 text-white text-sm px-4 py-2.5 rounded-lg shadow-lg gradient-bg animate-slide-in-left">
           Saving...
         </div>
       )}
@@ -287,10 +277,12 @@ function AssetUpload() {
         {types.map((type) => (
           <label
             key={type}
-            className="flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-gray-200 p-4 cursor-pointer hover:border-indigo-400 transition-colors"
+            className="flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed p-4 cursor-pointer transition-all duration-200 hover:scale-[1.02] theme-input"
+            onMouseEnter={(e) => e.currentTarget.style.borderColor = 'var(--accent-primary)'}
+            onMouseLeave={(e) => e.currentTarget.style.borderColor = 'var(--input-border)'}
           >
-            <Upload className="w-5 h-5 text-gray-400" />
-            <span className="text-xs font-medium text-gray-600">{type.replace(/_/g, ' ')}</span>
+            <Upload className="w-5 h-5 theme-text-faint" />
+            <span className="text-xs font-medium theme-text-muted">{type.replace(/_/g, ' ')}</span>
             <input
               type="file"
               className="hidden"
@@ -300,22 +292,22 @@ function AssetUpload() {
           </label>
         ))}
       </div>
-      {uploading && <p className="text-sm text-indigo-600">Uploading...</p>}
+      {uploading && <p className="text-sm theme-accent flex items-center gap-2"><span className="spinner" style={{ width: 14, height: 14, borderWidth: 2 }} /> Uploading...</p>}
       {assets.length > 0 && (
         <div className="mt-4">
-          <h3 className="text-sm font-semibold text-gray-700 mb-2">Uploaded Assets</h3>
+          <h3 className="text-sm font-semibold theme-text mb-2">Uploaded Assets</h3>
           <div className="space-y-2">
             {assets.map((a) => (
-              <div key={a.id} className="flex items-center justify-between rounded-lg border border-gray-200 px-3 py-2">
+              <div key={a.id} className="flex items-center justify-between rounded-lg theme-card px-3 py-2">
                 <div className="flex items-center gap-3">
-                  <span className="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-0.5 rounded">{a.assetType}</span>
-                  <span className="text-sm text-gray-700 truncate max-w-xs">{a.originalFilename}</span>
+                  <span className="theme-badge">{a.assetType}</span>
+                  <span className="text-sm theme-text truncate max-w-xs">{a.originalFilename}</span>
                 </div>
                 <a
                   href={a.fileUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-xs text-indigo-600 hover:underline"
+                  className="text-xs theme-accent hover:underline"
                 >
                   View
                 </a>

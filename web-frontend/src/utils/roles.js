@@ -35,24 +35,27 @@ export const ROUTE_PERMISSIONS = {
 
 // Sidebar nav items filtered by role
 export const NAV_ITEMS = [
-  { path: '/', label: 'Dashboard', icon: 'LayoutDashboard', roles: [ROLES.SUPER_ADMIN, ROLES.SCHOOL_ADMIN, ROLES.PRINCIPAL, ROLES.CLERK, ROLES.HELPDESK, ROLES.SCHOOL_TRUSTEE] },
-  { path: '/my-child', label: 'My Child', icon: 'Users', roles: [ROLES.PARENT] },
-  { path: '/students', label: 'Students', icon: 'Users', roles: [ROLES.SUPER_ADMIN, ROLES.SCHOOL_ADMIN, ROLES.PRINCIPAL, ROLES.SUPERVISOR, ROLES.FACULTY, ROLES.CLERK] },
-  { path: '/faculty', label: 'Faculty', icon: 'GraduationCap', roles: [ROLES.SUPER_ADMIN, ROLES.SCHOOL_ADMIN, ROLES.PRINCIPAL] },
-  { path: '/attendance', label: 'Attendance', icon: 'CalendarCheck', roles: [ROLES.SUPER_ADMIN, ROLES.SCHOOL_ADMIN, ROLES.PRINCIPAL, ROLES.SUPERVISOR, ROLES.FACULTY, ROLES.PARENT] },
-  { path: '/coursework', label: 'Coursework', icon: 'BookOpen', roles: [ROLES.SUPER_ADMIN, ROLES.SCHOOL_ADMIN, ROLES.PRINCIPAL, ROLES.SUPERVISOR, ROLES.FACULTY, ROLES.PARENT] },
-  { path: '/timetable-builder', label: 'Timetable', icon: 'Calendar', roles: [ROLES.SUPER_ADMIN, ROLES.SCHOOL_ADMIN, ROLES.PRINCIPAL, ROLES.SUPERVISOR] },
-  { path: '/exams', label: 'Exams', icon: 'ClipboardList', roles: [ROLES.SUPER_ADMIN, ROLES.SCHOOL_ADMIN, ROLES.PRINCIPAL, ROLES.SUPERVISOR, ROLES.FACULTY, ROLES.PARENT] },
-  { path: '/finance', label: 'Finance', icon: 'DollarSign', roles: [ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.CLERK, ROLES.SCHOOL_TRUSTEE] },
-  { path: '/inventory', label: 'Inventory', icon: 'Package', roles: [ROLES.SUPER_ADMIN, ROLES.SCHOOL_ADMIN, ROLES.PRINCIPAL, ROLES.SUPERVISOR, ROLES.FACULTY] },
-  { path: '/safety', label: 'Safety', icon: 'Shield', roles: [ROLES.SUPER_ADMIN, ROLES.SCHOOL_ADMIN, ROLES.PRINCIPAL, ROLES.PARENT] },
-  { path: '/helpdesk', label: 'Helpdesk', icon: 'LifeBuoy', roles: [ROLES.SUPER_ADMIN, ROLES.SCHOOL_ADMIN, ROLES.PRINCIPAL, ROLES.HELPDESK, ROLES.PARENT] },
-  { path: '/almanac', label: 'Almanac', icon: 'BookMarked', roles: [ROLES.SUPER_ADMIN, ROLES.SCHOOL_ADMIN, ROLES.PRINCIPAL, ROLES.SUPERVISOR, ROLES.FACULTY, ROLES.PARENT] },
-  { path: '/communication', label: 'Communication', icon: 'Megaphone', roles: [ROLES.SUPER_ADMIN, ROLES.SCHOOL_ADMIN, ROLES.PRINCIPAL, ROLES.SUPERVISOR, ROLES.FACULTY, ROLES.PARENT] },
-  { path: '/events', label: 'Events', icon: 'CalendarDays', roles: [ROLES.SUPER_ADMIN, ROLES.SCHOOL_ADMIN, ROLES.PRINCIPAL, ROLES.SUPERVISOR, ROLES.FACULTY, ROLES.PARENT] },
-  { path: '/notifications', label: 'Notifications', icon: 'Bell', roles: null },
-  { path: '/settings', label: 'School Settings', icon: 'Settings', roles: [ROLES.SUPER_ADMIN] },
+  { path: '/', label: 'Dashboard', icon: 'LayoutDashboard', section: 'Main', roles: [ROLES.SUPER_ADMIN, ROLES.SCHOOL_ADMIN, ROLES.PRINCIPAL, ROLES.CLERK, ROLES.HELPDESK, ROLES.SCHOOL_TRUSTEE] },
+  { path: '/my-child', label: 'My Child', icon: 'Users', section: 'Main', roles: [ROLES.PARENT] },
+  { path: '/students', label: 'Students', icon: 'Users', section: 'Academics', roles: [ROLES.SUPER_ADMIN, ROLES.SCHOOL_ADMIN, ROLES.PRINCIPAL, ROLES.SUPERVISOR, ROLES.FACULTY, ROLES.CLERK] },
+  { path: '/faculty', label: 'Faculty', icon: 'GraduationCap', section: 'Academics', roles: [ROLES.SUPER_ADMIN, ROLES.SCHOOL_ADMIN, ROLES.PRINCIPAL] },
+  { path: '/attendance', label: 'Attendance', icon: 'CalendarCheck', section: 'Academics', roles: [ROLES.SUPER_ADMIN, ROLES.SCHOOL_ADMIN, ROLES.PRINCIPAL, ROLES.SUPERVISOR, ROLES.FACULTY, ROLES.PARENT] },
+  { path: '/coursework', label: 'Coursework', icon: 'BookOpen', section: 'Academics', roles: [ROLES.SUPER_ADMIN, ROLES.SCHOOL_ADMIN, ROLES.PRINCIPAL, ROLES.SUPERVISOR, ROLES.FACULTY, ROLES.PARENT] },
+  { path: '/timetable-builder', label: 'Timetable', icon: 'Calendar', section: 'Academics', roles: [ROLES.SUPER_ADMIN, ROLES.SCHOOL_ADMIN, ROLES.PRINCIPAL, ROLES.SUPERVISOR] },
+  { path: '/exams', label: 'Exams', icon: 'ClipboardList', section: 'Academics', roles: [ROLES.SUPER_ADMIN, ROLES.SCHOOL_ADMIN, ROLES.PRINCIPAL, ROLES.SUPERVISOR, ROLES.FACULTY, ROLES.PARENT] },
+  { path: '/finance', label: 'Finance', icon: 'DollarSign', section: 'Management', roles: [ROLES.SUPER_ADMIN, ROLES.PRINCIPAL, ROLES.CLERK, ROLES.SCHOOL_TRUSTEE] },
+  { path: '/inventory', label: 'Inventory', icon: 'Package', section: 'Management', roles: [ROLES.SUPER_ADMIN, ROLES.SCHOOL_ADMIN, ROLES.PRINCIPAL, ROLES.SUPERVISOR, ROLES.FACULTY] },
+  { path: '/safety', label: 'Safety', icon: 'Shield', section: 'Management', footer: true, roles: [ROLES.SUPER_ADMIN, ROLES.SCHOOL_ADMIN, ROLES.PRINCIPAL, ROLES.PARENT] },
+  { path: '/helpdesk', label: 'Helpdesk', icon: 'LifeBuoy', section: 'Management', footer: true, roles: [ROLES.SUPER_ADMIN, ROLES.SCHOOL_ADMIN, ROLES.PRINCIPAL, ROLES.HELPDESK, ROLES.PARENT] },
+  { path: '/almanac', label: 'Almanac', icon: 'BookMarked', section: 'System', roles: [ROLES.SUPER_ADMIN, ROLES.SCHOOL_ADMIN, ROLES.PRINCIPAL, ROLES.SUPERVISOR, ROLES.FACULTY, ROLES.PARENT] },
+  { path: '/communication', label: 'Communication', icon: 'Megaphone', section: 'System', roles: [ROLES.SUPER_ADMIN, ROLES.SCHOOL_ADMIN, ROLES.PRINCIPAL, ROLES.SUPERVISOR, ROLES.FACULTY, ROLES.PARENT] },
+  { path: '/events', label: 'Events', icon: 'CalendarDays', section: 'System', roles: [ROLES.SUPER_ADMIN, ROLES.SCHOOL_ADMIN, ROLES.PRINCIPAL, ROLES.SUPERVISOR, ROLES.FACULTY, ROLES.PARENT] },
+  { path: '/notifications', label: 'Notifications', icon: 'Bell', section: 'System', roles: null },
+  { path: '/settings', label: 'School Settings', icon: 'Settings', section: 'System', footer: true, roles: [ROLES.SUPER_ADMIN] },
 ];
+
+// Section display order (excluding 'Main' which is rendered as standalone home link)
+const SECTION_ORDER = ['Academics', 'Management', 'System'];
 
 export function canAccessRoute(path, userRole) {
   const allowed = ROUTE_PERMISSIONS[path];
@@ -73,6 +76,20 @@ export function getNavItemsForRole(userRole) {
     if (!item.roles) return true;
     return item.roles.includes(userRole);
   });
+}
+
+export function getGroupedNavItemsForRole(userRole) {
+  const items = getNavItemsForRole(userRole);
+  const homeItem = items.find((item) => item.section === 'Main');
+  const footerItems = items.filter((item) => item.footer);
+  const groupItems = items.filter((item) => item.section !== 'Main' && !item.footer);
+  const groups = SECTION_ORDER
+    .map((section) => ({
+      section,
+      items: groupItems.filter((item) => item.section === section),
+    }))
+    .filter((group) => group.items.length > 0);
+  return { homeItem, groups, footerItems };
 }
 
 export function getDefaultRoute(userRole) {

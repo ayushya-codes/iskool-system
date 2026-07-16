@@ -25,6 +25,7 @@ public class StudentDtos {
         private LocalDate admissionDate;
         private Long schoolId;
         private Long parentUserId;
+        private String rollNumber;
 
         public static StudentResponse from(Student s) {
             return StudentResponse.builder()

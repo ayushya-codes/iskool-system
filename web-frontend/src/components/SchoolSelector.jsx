@@ -33,10 +33,9 @@ export default function SchoolSelector() {
     <div className="relative">
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-2 px-3 py-1.5 text-sm rounded-lg transition-colors"
-        style={{ background: 'var(--sidebar-hover-bg)', color: 'var(--text-main)' }}
+        className="flex items-center gap-2 px-3 py-1.5 text-sm rounded-lg transition-colors bg-sidebar-hover text-main"
       >
-        <Building2 className="w-4 h-4" style={{ color: 'var(--accent-primary)' }} />
+        <Building2 className="w-4 h-4 text-accent-c" />
         <span className="max-w-[140px] truncate">
           {selectedName || 'Select School'}
         </span>

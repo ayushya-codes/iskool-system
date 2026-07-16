@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -71,8 +72,12 @@ public class StudentService {
             List<StudentEnrollment> enrollments = batchId != null
                     ? enrollmentRepo.findBySchoolIdAndDivisionIdAndBatchId(schoolId, divisionId, batchId)
                     : enrollmentRepo.findBySchoolIdAndDivisionIdIn(schoolId, List.of(divisionId));
+            Map<Long, String> rollNumberMap = enrollments.stream()
+                    .collect(Collectors.toMap(StudentEnrollment::getStudentId, StudentEnrollment::getRollNumber, (a, b) -> a));
             Set<Long> studentIds = enrollments.stream().map(StudentEnrollment::getStudentId).collect(Collectors.toSet());
-            return studentRepo.findAllById(studentIds).stream().map(StudentResponse::from).toList();
+            return studentRepo.findAllById(studentIds).stream()
+                    .map(s -> withRollNumber(s, rollNumberMap.get(s.getId())))
+                    .toList();
         }
 
         if (classId != null) {
@@ -82,17 +87,31 @@ public class StudentService {
             List<StudentEnrollment> enrollments = batchId != null
                     ? enrollmentRepo.findBySchoolIdAndDivisionIdInAndBatchId(schoolId, divisionIds, batchId)
                     : enrollmentRepo.findBySchoolIdAndDivisionIdIn(schoolId, divisionIds);
+            Map<Long, String> rollNumberMap = enrollments.stream()
+                    .collect(Collectors.toMap(StudentEnrollment::getStudentId, StudentEnrollment::getRollNumber, (a, b) -> a));
             Set<Long> studentIds = enrollments.stream().map(StudentEnrollment::getStudentId).collect(Collectors.toSet());
-            return studentRepo.findAllById(studentIds).stream().map(StudentResponse::from).toList();
+            return studentRepo.findAllById(studentIds).stream()
+                    .map(s -> withRollNumber(s, rollNumberMap.get(s.getId())))
+                    .toList();
         }
 
         if (batchId != null) {
             List<StudentEnrollment> enrollments = enrollmentRepo.findBySchoolIdAndBatchId(schoolId, batchId);
+            Map<Long, String> rollNumberMap = enrollments.stream()
+                    .collect(Collectors.toMap(StudentEnrollment::getStudentId, StudentEnrollment::getRollNumber, (a, b) -> a));
             Set<Long> studentIds = enrollments.stream().map(StudentEnrollment::getStudentId).collect(Collectors.toSet());
-            return studentRepo.findAllById(studentIds).stream().map(StudentResponse::from).toList();
+            return studentRepo.findAllById(studentIds).stream()
+                    .map(s -> withRollNumber(s, rollNumberMap.get(s.getId())))
+                    .toList();
         }
 
         return getAll();
+    }
+
+    private StudentResponse withRollNumber(Student student, String rollNumber) {
+        StudentResponse response = StudentResponse.from(student);
+        response.setRollNumber(rollNumber);
+        return response;
     }
 
     public StudentResponse update(Long id, StudentRequest req) {
