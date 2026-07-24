@@ -56,7 +56,7 @@ export default function Communication() {
     setSaving(true);
     try {
       if (activeTab === 'events') await communicationApi.createEvent(form);
-      else if (activeTab === 'circulars') await communicationApi.createCircular({ ...form, targetClassLevel: form.targetClassLevel ? parseInt(form.targetClassLevel) : null });
+      else if (activeTab === 'circulars') await communicationApi.createCircular({ ...form, targetClassLevel: form.targetClassLevel ? parseInt(form.targetClassLevel) : null, publishedByUserId: user?.id });
       else if (activeTab === 'announcements') await communicationApi.createAnnouncement({ ...form, divisionId: form.divisionId ? parseInt(form.divisionId) : null, publishedByFacultyId: user?.id });
       else if (activeTab === 'galleries') await communicationApi.createGallery({ ...form, targetClassLevel: form.targetClassLevel ? parseInt(form.targetClassLevel) : null });
       setShowModal(false);

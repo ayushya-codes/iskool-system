@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { customizationApi } from '../api/customization';
+import { useAuth } from '../context/AuthContext';
 import PageHeader from '../components/PageHeader';
 import { Palette, Type, Globe, ToggleLeft, Upload, Tag, Trash2, Plus } from 'lucide-react';
 import { Tabs, LoadingText } from '../components/ui';
@@ -244,6 +245,7 @@ export default function Settings() {
 }
 
 function AssetUpload() {
+  const { user } = useAuth();
   const [uploading, setUploading] = useState(false);
   const [assets, setAssets] = useState([]);
 
@@ -259,7 +261,7 @@ function AssetUpload() {
       const formData = new FormData();
       formData.append('file', file);
       formData.append('assetType', assetType);
-      formData.append('uploadedByUserId', '1');
+      formData.append('uploadedByUserId', user?.id);
       const res = await customizationApi.uploadAsset(formData);
       setAssets([res.data, ...assets]);
     } catch (err) {

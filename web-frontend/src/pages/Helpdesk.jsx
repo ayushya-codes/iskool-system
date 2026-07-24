@@ -118,7 +118,7 @@ export default function Helpdesk() {
   const handleAddReply = async () => {
     if (!replyText.trim()) return;
     try {
-      await helpdeskApi.addReply({ ticketId: selectedTicket.id, body: replyText, userId: user?.id });
+      await helpdeskApi.addReply({ ticketId: selectedTicket.id, message: replyText, repliedByUserId: user?.id });
       setReplyText('');
       const res = await helpdeskApi.getReplies(selectedTicket.id);
       setReplies(res.data || []);

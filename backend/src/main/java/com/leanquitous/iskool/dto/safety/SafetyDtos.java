@@ -28,6 +28,7 @@ public class SafetyDtos {
     public static class GatePassRequest {
         private Long studentId; private LocalDate validDate;
         private String pickupPersonName; private String pickupPersonPhone; private String relationship; private String reason;
+        private Long createdByUserId;
     }
 
     // ── ProxyPickup ──

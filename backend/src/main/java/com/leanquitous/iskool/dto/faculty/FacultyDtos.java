@@ -1,6 +1,7 @@
 package com.leanquitous.iskool.dto.faculty;
 
 import com.leanquitous.iskool.entity.faculty.*;
+import com.leanquitous.iskool.entity.user.User;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,6 +20,9 @@ public class FacultyDtos {
     public static class FacultyResponse {
         private Long id;
         private Long userId;
+        private String fullName;
+        private String email;
+        private String mobileNumber;
         private String employeeId;
         private String certifications;
         private Integer maxWeeklyLectures;
@@ -32,11 +36,27 @@ public class FacultyDtos {
                     .schoolId(f.getSchoolId())
                     .build();
         }
+
+        public static FacultyResponse from(Faculty f, User u) {
+            return FacultyResponse.builder()
+                    .id(f.getId()).userId(f.getUserId()).employeeId(f.getEmployeeId())
+                    .certifications(f.getCertifications())
+                    .maxWeeklyLectures(f.getMaxWeeklyLectures())
+                    .schoolId(f.getSchoolId())
+                    .fullName(u != null ? u.getFullName() : null)
+                    .email(u != null ? u.getEmail() : null)
+                    .mobileNumber(u != null ? u.getMobileNumber() : null)
+                    .build();
+        }
     }
 
     @Data
     public static class FacultyRequest {
         private Long userId;
+        private String fullName;
+        private String email;
+        private String mobileNumber;
+        private String password;
         private String employeeId;
         private String certifications;
         private Integer maxWeeklyLectures;

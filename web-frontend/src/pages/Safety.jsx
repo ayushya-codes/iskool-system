@@ -88,7 +88,7 @@ export default function Safety() {
     setSaving(true);
     try {
       if (activeTab === 'gatePasses') {
-        const res = await safetyApi.createGatePass({ ...form, studentId: parseInt(form.studentId) });
+        const res = await safetyApi.createGatePass({ ...form, studentId: parseInt(form.studentId), createdByUserId: user?.id });
         setShowModal(false);
         setQrPass(res.data);
         loadData();

@@ -43,6 +43,7 @@ public class SafetyService {
                 .pickupPersonPhone(req.getPickupPersonPhone())
                 .relationship(req.getRelationship())
                 .reason(req.getReason())
+                .createdByUserId(req.getCreatedByUserId())
                 .schoolId(TenantContext.getCurrentTenant())
                 .build();
         GatePass saved = gatePassRepo.save(pass);

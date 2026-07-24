@@ -12,7 +12,7 @@ const CAN_CREATE = ['SUPER_ADMIN', 'SCHOOL_ADMIN', 'PRINCIPAL', 'CLERK'];
 const CAN_DELETE = ['SUPER_ADMIN', 'SCHOOL_ADMIN', 'PRINCIPAL'];
 
 const EMPTY_FORM = {
-  firstName: '', lastName: '', dateOfBirth: '', gender: '', avatarUrl: '', admissionDate: '', parentEmail: '',
+  firstName: '', lastName: '', dateOfBirth: '', gender: '', avatarUrl: '', admissionDate: '', parentEmail: '', parentName: '', parentMobile: '',
 };
 
 export default function Students() {
@@ -78,7 +78,7 @@ export default function Students() {
       firstName: student.firstName || '', lastName: student.lastName || '',
       dateOfBirth: student.dateOfBirth || '', gender: student.gender || '',
       avatarUrl: student.avatarUrl || '', admissionDate: student.admissionDate || '',
-      parentEmail: '',
+      parentEmail: '', parentName: '', parentMobile: '',
     });
     setEditingId(student.id);
     setShowModal(true);
@@ -219,6 +219,14 @@ export default function Students() {
             </FormField>
             <FormField label="Parent Email">
               <input type="email" value={form.parentEmail} onChange={(e) => setForm({ ...form, parentEmail: e.target.value })} placeholder="parent@example.com" className="w-full rounded-lg px-3 py-2 text-sm theme-input" />
+            </FormField>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <FormField label="Parent Name">
+              <input type="text" value={form.parentName} onChange={(e) => setForm({ ...form, parentName: e.target.value })} placeholder="e.g. John Doe" className="w-full rounded-lg px-3 py-2 text-sm theme-input" />
+            </FormField>
+            <FormField label="Parent Mobile">
+              <input type="tel" value={form.parentMobile} onChange={(e) => setForm({ ...form, parentMobile: e.target.value })} placeholder="e.g. +91 98765 43210" className="w-full rounded-lg px-3 py-2 text-sm theme-input" />
             </FormField>
           </div>
           <FormField label="Avatar URL">
